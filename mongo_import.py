@@ -339,6 +339,8 @@ def top_clients_summary():
                 if (return_home_zipcodes[home_zipcode] == undefined) {
                     return_home_zipcodes[home_zipcode] = deepcopy(value['home_zipcodes'][home_zipcode]);
                 } else {
+                    
+                    
 
                     // If it existed, the merge it. "me" is the current zipcode data, other is the 
                     // existing zipcode data.
@@ -366,6 +368,8 @@ def top_clients_summary():
                         
                         // For each date in the current data (the existing data does not need any change)
                         for (var date in me[by]) {
+                            if (date == 'total')
+                                continue;
 
                             // If this new data is not present in the existing data, just copy it.
                             if (other[by][date] == undefined) {
@@ -429,7 +433,7 @@ def top_clients_summary():
     # print map_func
     # print reduce_func
 
-    nonAtomic = True
+    nonAtomic = False
 
     print "Procesando 1"
     bbva.top_clients_week.map_reduce(
