@@ -12,6 +12,11 @@ from networkx.algorithms import bipartite
 import community
 
 from bbvalib import create_mongoclient
+from geo_tools import haversine
+
+json_data=open('./data/all_zipcodes.json')
+zipcodes = json.load(json_data)
+json_data.close() 
 
 def show_info(G):
     print 'Is directed?: %s' %(str(G.is_directed())) 
@@ -19,26 +24,55 @@ def show_info(G):
     print 'Edges: %i' % (len(G.edges()))
     
 def export_gexf(G, path):
-    gexf.write_gexf(G, path)
-    
+    gexf.write_gexf(G, path)    
 
-def get_total_relations():    
-    G = nx.DiGraph()
-    bbva = create_mongoclient()
+#def get_total_relations():    
+#    G = nx.DiGraph()
+#    bbva = create_mongoclient()
+#    
+#    weekly = bbva.top_clients_week
+#    # all_transactions = weekly.find({ 'category' : 'es_barsandrestaurants' })
+#    all_transactions = weekly.find()
+#    for transaction in all_transactions:
+#        G.add_edge( transaction['home_zipcode'], 
+#                    transaction['shop_zipcode'], 
+#                    weight=transaction['incomes'], 
+#                    incomes=transaction['incomes'], 
+#                    num_payments=transaction['num_payments'])
+#    show_info(G)
+#    return G
     
-    weekly = bbva.top_clients_week
-    # all_transactions = weekly.find({ 'category' : 'es_barsandrestaurants' })
+def get_total_relations(min_km = 0):    
+    bbva = create_mongoclient()    
+    weekly = bbva.top_clients_week  
+    
+    G = nx.DiGraph()
     all_transactions = weekly.find()
     for transaction in all_transactions:
-        G.add_edge( transaction['home_zipcode'], 
-                    transaction['shop_zipcode'], 
-                    weight=transaction['incomes'], 
-                    incomes=transaction['incomes'], 
-                    num_payments=transaction['num_payments'])
+        home_lat, home_lon = get_lon_lat(transaction['home_zipcode'])
+        shop_lat, shop_lon = get_lon_lat(transaction['shop_zipcode'])
+        distance = haversine(home_lon, home_lat, shop_lon, shop_lat)
+
+        if distance > min_km:
+            G.add_edge( transaction['home_zipcode'], 
+                        transaction['shop_zipcode'], 
+                        weight=transaction['incomes'], 
+                        incomes=transaction['incomes'], 
+                        num_payments=transaction['num_payments'])
     show_info(G)
     return G
     
-def get_relations_by_category(week, category):
+def get_lon_lat(zipcode):
+    result = zipcodes.get(zipcode)
+    if result is not None:
+        lat, lon = result
+    else:
+        lat = 47.66
+        lon = -1.58
+        
+    return float(lat), float(lon)
+    
+def get_relations_by_category(week, category, min_km = 0):
     bbva = create_mongoclient()
     summary = bbva.top_clients_summary
     all_transactions = summary.find()
@@ -50,23 +84,23 @@ def get_relations_by_category(week, category):
             home_zipcode = key
             incomes = home_info[key]['per_week'][week][category]['incomes']
             if incomes > 0:
-                num_payments= home_info[key]['per_week'][week][category]['num_payments']
-                G.add_edge( home_zipcode, 
-                           shop_zipcode, 
-                           weight=incomes, 
-                           incomes=incomes, 
-                           num_payments=num_payments)
+                home_lat, home_lon = get_lon_lat(home_zipcode)
+                shop_lat, shop_lon = get_lon_lat(shop_zipcode)
+                distance = haversine(home_lon, home_lat, shop_lon, shop_lat)
+                if distance > min_km:
+                    num_payments= home_info[key]['per_week'][week][category]['num_payments']
+                    G.add_edge( home_zipcode, 
+                               shop_zipcode, 
+                               weight=incomes, 
+                               incomes=incomes, 
+                               num_payments=num_payments)
                            
     show_info(G)
     return G
                 
      
     
-def update_location_data(G, path):
-    json_data=open(path)
-    zipcodes = json.load(json_data)
-    json_data.close()
-    
+def update_location_data(G, path):    
     for node in G.nodes():
         result = zipcodes.get(node)
         if result is not None:
@@ -113,15 +147,23 @@ def analyze_graph(G):
         G.node[member]['community'] = c   
     
     return G
-    
-G = get_total_relations() 
-G = update_location_data(G, './data/all_zipcodes.json')
-export_gexf(G, './data/processed_graph/directed.gexf')  
-
-
-G = get_relations_by_category('total','es_auto')
-G = update_location_data(G, './data/all_zipcodes.json')
-export_gexf(G, './data/processed_graph/directed_es_auto.gexf')  
+ 
+# ALL RELATIONS   
+#G = get_total_relations() 
+#G = update_location_data(G, './data/all_zipcodes.json')
 #G = analyze_graph(G)
+#export_gexf(G, './data/processed_graph/directed.gexf')  
+
+#BY WEEK AND CATEGORY
+#G = get_relations_by_category('total','es_auto')
+#G = update_location_data(G, './data/all_zipcodes.json')
+#G = analyze_graph(G)
+#export_gexf(G, './data/processed_graph/directed_es_auto_total.gexf')  
+
+##MAXIMUN DISTANCE
+G = get_total_relations(99)
+G = update_location_data(G, './data/all_zipcodes.json')
+export_gexf(G, './data/processed_graph/directed_es_100km.gexf') 
+
    
 print 'fin' 
