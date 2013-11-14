@@ -4,9 +4,9 @@ import glob
 
 from bbvalib import create_mongoclient
 
-DELETE_ALL   = False
-TOP_CLIENTS  = False
-DATA_SUMMARY = True
+DELETE_ALL           = False
+TOP_CLIENTS          = False
+SHOP_ZIPCODE_SUMMARY = True
 
 #############################################################################
 # 
@@ -458,12 +458,12 @@ if TOP_CLIENTS:
     top_clients_summary()
 
 
-def data_summary():
+def shop_zipcode_summary():
     from bson.code import Code
     from bson.son import SON
 
     db = create_mongoclient()
-    db.drop_collection('data_summary')
+    db.drop_collection('shop_zipcode_summary')
 
     categories = db.cube_month.find().distinct('category')
     categories = json.dumps(categories)
@@ -514,6 +514,7 @@ def data_summary():
             return {
                 'total' : {
                     'per_age' : {
+                        '0' : empty_total_cube_data(),
                         '1' : empty_total_cube_data(),
                         '2' : empty_total_cube_data(),
                         '3' : empty_total_cube_data(),
@@ -525,11 +526,13 @@ def data_summary():
                     'per_gender' : {
                         'male'       : empty_total_cube_data(),
                         'female'     : empty_total_cube_data(),
-                        'enterprise' : empty_total_cube_data()
+                        'enterprise' : empty_total_cube_data(),
+                        'unknown'    : empty_total_cube_data()
                     }
                 },
                 'cubes' : {
                     'male' : {
+                        '0' : empty_cube_data(),
                         '1' : empty_cube_data(),
                         '2' : empty_cube_data(),
                         '3' : empty_cube_data(),
@@ -539,6 +542,17 @@ def data_summary():
                         'U' : empty_cube_data()
                     },
                     'female' : {
+                        '0' : empty_cube_data(),
+                        '1' : empty_cube_data(),
+                        '2' : empty_cube_data(),
+                        '3' : empty_cube_data(),
+                        '4' : empty_cube_data(),
+                        '5' : empty_cube_data(),
+                        '6' : empty_cube_data(),
+                        'U' : empty_cube_data()
+                    },
+                    'unknown' : {
+                        '0' : empty_cube_data(),
                         '1' : empty_cube_data(),
                         '2' : empty_cube_data(),
                         '3' : empty_cube_data(),
@@ -673,6 +687,87 @@ def data_summary():
         SHARED     = shared_code
     ))
 
+    map_cube_month_func = Code("""function () {
+        %(SHARED)s
+
+        // Basic structure
+        value['categories'][self.category]['months'][self.month] = {
+            'days'  : {},
+            'cubes' : empty_cube(),
+            'total' : empty_summary()
+        };
+
+        // Monthly, category data
+
+        // Individual data
+        value['categories'][self.category]['months'][self.month]['cubes']['cubes'][self.gender][self.age_code]['avg'] = self.avg;
+        value['categories'][self.category]['months'][self.month]['cubes']['cubes'][self.gender][self.age_code]['num_cards'] = self.num_cards;
+        value['categories'][self.category]['months'][self.month]['cubes']['cubes'][self.gender][self.age_code]['num_payments'] = self.num_payments;
+        value['categories'][self.category]['months'][self.month]['cubes']['cubes'][self.gender][self.age_code]['total'] = self.num_payments * self.avg;
+
+        // total per_age
+        value['categories'][self.category]['months'][self.month]['cubes']['total']['per_age'][self.age_code]['avg'] = self.avg;
+        value['categories'][self.category]['months'][self.month]['cubes']['total']['per_age'][self.age_code]['num_payments'] = self.num_payments;
+        value['categories'][self.category]['months'][self.month]['cubes']['total']['per_age'][self.age_code]['total'] = self.num_payments * self.avg;
+
+        // total per_gender
+        value['categories'][self.category]['months'][self.month]['cubes']['total']['per_gender'][self.gender]['avg'] = self.avg;
+        value['categories'][self.category]['months'][self.month]['cubes']['total']['per_gender'][self.gender]['num_payments'] = self.num_payments;
+        value['categories'][self.category]['months'][self.month]['cubes']['total']['per_gender'][self.gender]['total'] = self.num_payments * self.avg;
+
+
+        // TODO: there should be category-level totals and category-independent monthly totals and non monthly totals
+        // Category level total data. Individual
+        // value['categories'][self.category]['total']['cubes']['cubes'][self.gender][self.age_code]['avg'] = self.avg;
+        // value['categories'][self.category]['total']['cubes']['cubes'][self.gender][self.age_code]['num_payments'] = self.num_payments;
+        // value['categories'][self.category]['total']['cubes']['cubes'][self.gender][self.age_code]['total'] = self.avg * self.num_payments;
+
+        emit(this.shop_zipcode, value);
+    }""" % dict(
+        CATEGORIES = categories,
+        SHARED     = shared_code
+    ))
+
+    map_cube_week_func = Code("""function () {
+        %(SHARED)s
+
+        // Basic structure
+        value['categories'][self.category]['weeks'][self.week] = {
+            'cubes' : empty_cube(),
+        };
+
+        // Monthly, category data
+
+        // Individual data
+        value['categories'][self.category]['weeks'][self.week]['cubes']['cubes'][self.gender][self.age_code]['avg'] = self.avg;
+        value['categories'][self.category]['weeks'][self.week]['cubes']['cubes'][self.gender][self.age_code]['num_cards'] = self.num_cards;
+        value['categories'][self.category]['weeks'][self.week]['cubes']['cubes'][self.gender][self.age_code]['num_payments'] = self.num_payments;
+        value['categories'][self.category]['weeks'][self.week]['cubes']['cubes'][self.gender][self.age_code]['total'] = self.num_payments * self.avg;
+
+        // total per_age
+        value['categories'][self.category]['weeks'][self.week]['cubes']['total']['per_age'][self.age_code]['avg'] = self.avg;
+        value['categories'][self.category]['weeks'][self.week]['cubes']['total']['per_age'][self.age_code]['num_payments'] = self.num_payments;
+        value['categories'][self.category]['weeks'][self.week]['cubes']['total']['per_age'][self.age_code]['total'] = self.num_payments * self.avg;
+
+        // total per_gender
+        value['categories'][self.category]['weeks'][self.week]['cubes']['total']['per_gender'][self.gender]['avg'] = self.avg;
+        value['categories'][self.category]['weeks'][self.week]['cubes']['total']['per_gender'][self.gender]['num_payments'] = self.num_payments;
+        value['categories'][self.category]['weeks'][self.week]['cubes']['total']['per_gender'][self.gender]['total'] = self.num_payments * self.avg;
+
+
+        // TODO: there should be category-level totals and category-independent weekly totals and non weekly totals
+        // Category level total data. Individual
+        // value['categories'][self.category]['total']['cubes']['cubes'][self.gender][self.age_code]['avg'] = self.avg;
+        // value['categories'][self.category]['total']['cubes']['cubes'][self.gender][self.age_code]['num_payments'] = self.num_payments;
+        // value['categories'][self.category]['total']['cubes']['cubes'][self.gender][self.age_code]['total'] = self.avg * self.num_payments;
+
+        emit(this.shop_zipcode, value);
+    }""" % dict(
+        CATEGORIES = categories,
+        SHARED     = shared_code
+    ))
+
+
     reduce_func = Code("""function (key, values) {
         %(SHARED)s
 
@@ -750,6 +845,84 @@ def data_summary():
                 }
             }
         };       
+
+        var processCubes = function(other, me, category, month, week) {
+            // First cubes/cubes
+            for (var gender in me['cubes']['cubes']) {
+                // If the gender doesn't exist, copy it
+                if (other['cubes']['cubes'][gender] == undefined) {
+                    other['cubes']['cubes'][gender] = deepcopy(me['cubes']['cubes'][gender]);
+                    continue;
+                } else {
+                    // Merge a gender, age (except for total)
+                    for (var age in me['cubes']['cubes'][gender]) {
+                        // If the age doesn't exist or it's empty, copy it
+                        if (other['cubes']['cubes'][gender][age] == undefined || other['cubes']['cubes'][gender][age]['num_cards'] < 1) {
+                            other['cubes']['cubes'][gender][age] = deepcopy(me['cubes']['cubes'][gender][age]);
+                            continue;        
+                        } else {
+                            // If the existing data has something and the 
+                            // current data is empty, just skip this one.
+                            if (me['cubes']['cubes'][gender][age]['num_cards'] < 1) {
+                                continue;
+                            }
+                            // It's impossible that this particular exist is replicated
+                            // since for a zipcode::category::month::cubes::gender::age there is a 
+                            // single registry.
+                            print("Replicated data found. shop_zipcode " + key + ", category " + category + ", month " + month + " or week " + week + ", cube (gender = " + gender + ", age = " + age + ") already had data. See the logs for comparison");
+                            printjson(other['cubes']['cubes'][gender][age]);
+                            printjson(me['cubes']['cubes'][gender][age]);
+                            throw new Error("Replicated data found. shop_zipcode " + key + ", category " + category + ", month " + month + " or week " + week + ", cube (gender = " + gender + ", age = " + age + ") already had data. See the logs for comparison");
+                        }
+                    }
+                }
+            }
+
+            // Then, cubes/total. First cubes/total/per_age
+            var other_per_age = other['cubes']['total']['per_age'];
+            var me_per_age   = me['cubes']['total']['per_age'];
+            for (var age in me_per_age) {
+                // If the existing is empty or does not exist, copy it
+                if (other_per_age[age] == undefined) {
+                    other_per_age[age] = deepcopy(me_per_age[age]);
+                } else {
+                    // Otherwise, merge
+                    var total        = other_per_age[age]['total'] + me_per_age[age]['total'];
+                    var num_payments = other_per_age[age]['num_payments'] + me_per_age[age]['num_payments'];
+                    var avg;
+                    if (num_payments == 0)
+                        avg = 0.0;
+                    else
+                        avg = 1.0 * total / num_payments;
+                    other_per_age[age]['total']        = total;
+                    other_per_age[age]['num_payments'] = num_payments;
+                    other_per_age[age]['avg']          = avg;
+                }
+            }
+ 
+            // Then cubes/total/per_gender
+            var other_per_gender = other['cubes']['total']['per_gender'];
+            var me_per_gender    = me['cubes']['total']['per_gender'];
+            for (var gender in me_per_gender) {
+                // If the existing is empty or does not exist, copy it
+                if (other_per_gender[gender] == undefined) {
+                    other_per_gender[gender] = deepcopy(me_per_gender[gender]);
+                } else {
+                    // Otherwise, merge
+                    var total        = other_per_gender[gender]['total'] + me_per_gender[gender]['total'];
+                    var num_payments = other_per_gender[gender]['num_payments'] + me_per_gender[gender]['num_payments'];
+                    var avg;
+                    if (num_payments == 0)
+                        avg = 0.0;
+                    else
+                        avg = 1.0 * total / num_payments;
+                    other_per_gender[gender]['total']        = total;
+                    other_per_gender[gender]['num_payments'] = num_payments;
+                    other_per_gender[gender]['avg']          = avg;
+                }
+            }
+        };
+
         // Take all values, and merge them one by one in reduced_value
         values.forEach(function(value) {
             // First, merge categories
@@ -793,89 +966,30 @@ def data_summary():
                     }
 
                     // Then, cubes. 
-                    // First cubes/cubes
-                    for (var gender in me_month['cubes']['cubes']) {
-                        // If the gender doesn't exist, copy it
-                        if (other_month['cubes']['cubes'][gender] == undefined) {
-                            other_month['cubes']['cubes'][gender] = deepcopy(me_month['cubes']['cubes'][gender]);
-                            continue;
-                        } else {
-                            // Merge a gender, age (except for total)
-                            for (var age in me_month['cubes']['cubes'][gender]) {
-                                // If the age doesn't exist or it's empty, copy it
-                                if (other_month['cubes']['cubes'][gender][age] == undefined || other_month['cubes']['cubes'][gender][age]['num_cards'] < 1) {
-                                    other_month['cubes']['cubes'][gender][age] = deepcopy(me_month['cubes']['cubes'][gender][age]);
-                                    continue;        
-                                } else {
-                                    // If the existing data has something and the 
-                                    // current data is empty, just skip this one.
-                                    if (me_month['cubes']['cubes'][gender][age]['num_cards'] < 1) {
-                                        continue;
-                                    }
-                                    // It's impossible that this particular exist is replicated
-                                    // since for a zipcode::category::month::cubes::gender::age there is a 
-                                    // single registry.
-                                    print("Replicated data found. shop_zipcode " + key + ", category " + category + ", month " + month + ", cube (gender = " + gender + ", age = " + age + ") already had data. See the logs for comparison");
-                                    printjson(other_month['cubes']['cubes'][gender][age]);
-                                    printjson(me_month['cubes']['cubes'][gender][age]);
-                                    throw new Error("Replicated data found. shop_zipcode " + key + ", category " + category + ", month " + month + ", cube (gender = " + gender + ", age = " + age + ") already had data. See the logs for comparison");
-                                }
-                            }
-                        }
-                    }
-
-                    // Then, cubes/total. First cubes/total/per_age
-                    var other_per_age = other_month['cubes']['total']['per_age'];
-                    var me_per_age   = me_month['cubes']['total']['per_age'];
-                    for (var age in me_per_age) {
-                        // If the existing is empty or does not exist, copy it
-                        if (other_per_age[age] == undefined) {
-                            other_per_age[age] = deepcopy(me_per_age[age]);
-                        } else {
-                            // Otherwise, merge
-                            var total        = other_per_age[age]['total'] + me_per_age[age]['total'];
-                            var num_payments = other_per_age[age]['num_payments'] + me_per_age[age]['num_payments'];
-                            var avg;
-                            if (num_payments == 0)
-                                avg = 0.0;
-                            else
-                                avg = 1.0 * total / num_payments;
-                            other_per_age[age]['total']        = total;
-                            other_per_age[age]['num_payments'] = num_payments;
-                            other_per_age[age]['avg']          = avg;
-                        }
-                    }
-                    
-
-                    // Then cubes/total/per_gender
-                    var other_per_gender = other_month['cubes']['total']['per_gender'];
-                    var me_per_gender    = me_month['cubes']['total']['per_gender'];
-                    for (var gender in me_per_gender) {
-                        // If the existing is empty or does not exist, copy it
-                        if (other_per_gender[gender] == undefined) {
-                            other_per_gender[gender] = deepcopy(me_per_gender[gender]);
-                        } else {
-                            // Otherwise, merge
-                            var total        = other_per_gender[gender]['total'] + me_per_gender[gender]['total'];
-                            var num_payments = other_per_gender[gender]['num_payments'] + me_per_gender[gender]['num_payments'];
-                            var avg;
-                            if (num_payments == 0)
-                                avg = 0.0;
-                            else
-                                avg = 1.0 * total / num_payments;
-                            other_per_gender[gender]['total']        = total;
-                            other_per_gender[gender]['num_payments'] = num_payments;
-                            other_per_gender[gender]['avg']          = avg;
-                        }
-                    }
-
+                    processCubes(other_month, me_month, category, month, 'none');
+                   
                     // Then, merge month/total.
                     // print("Calling total from category/month/total/total");
                     mergeTotalTotal(other_month['total'], me_month['total']);
                 }
 
                 // Then, merge weeks
-                // (Not done yet). TODO
+                for (var week in me_category['weeks']) {
+                    // If the week doesn't exist in reduced_value, copy it
+                    if (other_category['weeks'][week] == undefined) {
+                        other_category['weeks'][week] = deepcopy(me_category['weeks'][week]);
+                        continue;
+                    } 
+                    
+                    // Otherwise, merge. 
+                    var me_week = me_category['weeks'][week];
+                    var other_week = other_category['weeks'][week];
+
+                    // Only cubes are available here.
+                    processCubes(other_week, me_week, category, 'none', week);
+
+                    // TODO: totals
+                }
 
                 // Then, merge category/total:
                 // print("Calling days from category/total/days");
@@ -907,10 +1021,22 @@ def data_summary():
     db.patterns_month.map_reduce(
         map_patterns_func,
         reduce_func, 
-        out=SON([("reduce", "data_summary"), ('nonAtomic', nonAtomic)]))
+        out=SON([("reduce", "shop_zipcode_summary"), ('nonAtomic', nonAtomic)]))
+
+    print "Procesando 2"
+    db.cube_month.map_reduce(
+        map_cube_month_func,
+        reduce_func, 
+        out=SON([("reduce", "shop_zipcode_summary"), ('nonAtomic', nonAtomic)]))
+
+    print "Procesando 3"
+    db.cube_week.map_reduce(
+        map_cube_week_func,
+        reduce_func, 
+        out=SON([("reduce", "shop_zipcode_summary"), ('nonAtomic', nonAtomic)]))
 
     print "Hecho"
 
-if DATA_SUMMARY:
-    data_summary()
+if SHOP_ZIPCODE_SUMMARY:
+    shop_zipcode_summary()
 
