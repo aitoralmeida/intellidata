@@ -5,7 +5,7 @@ except ImportError:
 
 def create_mongoclient():
     from pymongo import MongoClient
-    client = MongoClient(port=config.MONGODB_PORT)
+    client = MongoClient(port=config.MONGO_PORT)
     db = client.bbva
     return db
 

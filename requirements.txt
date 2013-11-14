@@ -2,3 +2,4 @@ networkx==1.8rc1
 numpy==1.7.1
 pymongo==2.5.2
 flask==0.9.0
+Flask-PyMongo==0.3.0

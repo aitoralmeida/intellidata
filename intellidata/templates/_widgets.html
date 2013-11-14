@@ -1,0 +1,37 @@
+{% macro timetable(data, show_empty = False) %}
+     <table class="table table-bordered table-hover" style="table-layout: fixed">
+        <thead>
+            <tr>
+                <th></th>
+                <th class="text-center">Monday</th>
+                <th class="text-center">Tuesday</th>
+                <th class="text-center">Wednesday</th>
+                <th class="text-center">Thursday</th>
+                <th class="text-center">Friday</th>
+                <th class="text-center">Saturday</th>
+                <th class="text-center">Sunday</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set days = 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday' %}
+            {% for hour_number in range(24) %}
+                {% set hour = ('%s' % hour_number).zfill(2) %}
+
+                {% if show_empty or hour not in data.get('empty_hours', []) %}
+                <tr>
+                    <th>{{ hour }}:00</th>
+                    {% for day in days %}
+                        {% if hour in data['hours'] and day in data['hours'][hour] %}
+                            <td class="text-center" style="background-color: #{{ data['hours'][hour][day]['color'] }}">{{ data['hours'][hour][day]['value'] }}</td>
+                        {% else %}
+                            <td class="text-center" style="background-color: #ffffff"></td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+   
+
+{% endmacro %}
