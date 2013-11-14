@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <title>Intellidata - {{ title }}</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link href="{{ url_for('static', filename='bootstrap3/css/bootstrap.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='bootstrap3/css/bootstrap-glyphicons.css') }}" rel="stylesheet">
+    <style>
+        body { 
+            padding-top: 70px; 
+        }
+        .spacer {
+            display: inline-block;
+            width: 6em;
+            height: 3em;
+        }
+        .vmargin-20 {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .footer {
+            border-top-color: rgb(229, 229, 229);
+            border-top-style: solid;
+            border-top-width: 1px;
+            margin-top: 20px;
+            color: rgb(119, 119, 119);
+        }
+
+        .footer-text {
+            margin-top: 20px;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+    </style>
+    {% block header %}
+    {% endblock %}
+</head>
+<body>
+    <div class="navbar navbar-fixed-top">
+        <div class="container">
+            <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".weblab-navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="{{ url_for('index', _external = True) }}">
+                Intellidata
+            </a>
+            <div class="nav-collapse collapse weblab-navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li {% if link == "home" %}class="active"{% endif %}><a href="index.html">Home</a></li>
+                    <li {% if link == "basic" %}class="active"{% endif %} class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Basic  <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="awards.html">Awards</a></li>
+                        </ul>
+                    </li>
+                    <li {% if link == "contact" %}class="active"{% endif %}><a href="{{ url_for('contact') }}">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+{% block body %}
+{% endblock %}
+
+    <div class="footer">
+        <div class="container footer-text">
+            <div class="text-center">
+                <p>Intellidata, the bank data analization project.</p> 
+            </div>
+        </div>
+    </div>
+
+<script src="{{ url_for('static', filename='js/jquery.js') }}"></script>
+<script src="{{ url_for('static', filename='bootstrap3/js/bootstrap.js') }}"></script>
+
+
+{% block scripts %}
+{% endblock %}
+</body>
+</html>
