@@ -12,7 +12,32 @@ def geo(zipcode):
     latitud, longitud = content.split('<h3><b>Latitud: ')[1].split('<br>')[0:2]
     latitud = latitud.split('</b>')[0]
     longitud = longitud.split('</b>')[0].split(' ')[-1]
+
+    if latitud == '' or longitud == '':
+        content = urllib2.urlopen("http://www.codigospostales.com/%s").read()
+        if ("%s </title>" % zipcode) not in content: # Otherwise, it does not exist
+            pass
+
     return json.dumps((latitud, longitud))
+
+def kml(zipcode):
+    print "Downloading KML of %s..." % zipcode,
+    fname = 'kmls/%s.kml' % zipcode
+    if os.path.exists(fname):
+        print "[loaded]"
+    else:
+        try:
+            content = urllib2.urlopen("http://www.codigospostales.com/kml/%s/%s.kml" % (zipcode[:2], zipcode)).read()
+        except urllib2.HTTPError:
+            print "[not found]"
+        except:
+            print "Error"
+            traceback.print_exc()
+        else:
+            open(fname, 'w').write(content)
+            print "[done]"
+    sys.stdout.flush()
+    sys.stderr.flush()
 
 USE_HOME_ZIPCODES = True
 home_zipcodes = json.load(open('home_zipcodes.json'))
@@ -45,6 +70,7 @@ for x in range(1000, 51000):
             traceback.print_exc()
         sys.stdout.flush()
         sys.stderr.flush()
+        kml(ciudad)
 
 data = {}
 for fname in glob.glob("output/*.json"):
