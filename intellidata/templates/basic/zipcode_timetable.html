@@ -1,0 +1,32 @@
+{% set link="basic" %}
+{% set title="Zipcode" %}
+{% extends "master.html" %}
+{% block body %}
+
+{% from "_widgets.html" import timetable %}
+<div class="container">
+    
+    <h1>Table of contents</h1>
+    <ul>
+        <li><a href="total">Total</a></li>
+        {% for category in categories %}
+        <li><a href="{{ url_for('basic.zipcode_timetables_category', zipcode = zipcode, category = category) }}">{{ category }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <div class="page-header">
+        <a name="total"></a>
+        <h1>Total timetable</h1>
+    </div>
+
+    <div class="row">
+    {% for field in total_timetables %}
+        <div class="col-lg-6">
+            <h3>{{ field.title() }}</h3>
+            {{ timetable(total_timetables[field]) }}
+        </div>
+    {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

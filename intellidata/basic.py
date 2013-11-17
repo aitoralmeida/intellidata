@@ -75,20 +75,37 @@ def zipcodes():
             madrid_zipcodes.append(zipcode)
     return render_template("basic/zipcodes.html", madrid_zipcodes = sorted(madrid_zipcodes), barcelona_zipcodes = sorted(barcelona_zipcodes))
 
-@basic_blueprint.route('/zipcodes/<zipcode>')
-def zipcode(zipcode):
+@basic_blueprint.route('/zipcodes/<zipcode>/')
+def zipcode_summary(zipcode):
+    return render_template("basic/zipcode.html", zipcode = zipcode)
+
+@basic_blueprint.route('/zipcodes/<zipcode>/timeline/')
+def zipcode_timeline(zipcode):
+    return render_template("basic/zipcode_timeline.html", zipcode = zipcode)
+
+@basic_blueprint.route('/zipcodes/<zipcode>/timetables/')
+def zipcode_timetables(zipcode):
     zipcode_data = next(mongo.db.shop_zipcode_summary.find({ '_id' : zipcode }), None)
     if zipcode_data is None:
         return render_template("errors.html", message = "zipcode not found")
 
     days_data = zipcode_data['value']['total']['days']
-
     total_timetables = generate_timetable(days_data)
 
-    category_timetables = {}
-    for category in zipcode_data['value']['categories']:
-        days_data = zipcode_data['value']['categories'][category]['total']['days']
-        category_timetables[category] = generate_timetable(days_data)
+    categories = zipcode_data['value']['categories'].keys()
+    return render_template("basic/zipcode_timetable.html", total_timetables = total_timetables, categories = categories, zipcode = zipcode)
 
-    return render_template("basic/zipcode.html", total_timetables = total_timetables, category_timetables = category_timetables)
+@basic_blueprint.route('/zipcodes/<zipcode>/timetables/<category>/')
+def zipcode_timetables_category(zipcode, category):
+    zipcode_data = next(mongo.db.shop_zipcode_summary.find({ '_id' : zipcode }), None)
+    if zipcode_data is None:
+        return render_template("errors.html", message = "zipcode not found")
+
+    if category not in zipcode_data['value']['categories']:
+        return render_template("errors.html", message = "category not found")
+
+    category_data = zipcode_data['value']['categories'][category]
+    category_timetable = generate_timetable(category_data['total']['days'])
+
+    return render_template("basic/zipcode_timetable_category.html", category_name = category.title(), category_timetable = category_timetable)
 

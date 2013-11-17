@@ -6,46 +6,13 @@
 {% from "_widgets.html" import timetable %}
 <div class="container">
     
-    <h1>Table of contents</h1>
+    <div class="page-header">
+        <h2>Information</h2>
+    </div>
     <ul>
-        <li><a href="total">Total</a></li>
-        {% for category in category_timetables %}
-        <li><a href="#{{ category }}">{{ category }}</a></li>
-        {% endfor %}
+        <li><a href="{{ url_for('basic.zipcode_timeline', zipcode = zipcode ) }}">Timeline</a></li>
+        <li><a href="{{ url_for('basic.zipcode_timetables', zipcode = zipcode ) }}">Timetables</a></li>
     </ul>
-
-    <div class="page-header">
-        <a name="total"></a>
-        <h1>Total timetable</h1>
-    </div>
-
-    <div class="row">
-    {% for field in total_timetables %}
-        <div class="col-lg-6">
-            <h3>{{ field.title() }}</h3>
-            {{ timetable(total_timetables[field]) }}
-        </div>
-    {% endfor %}
-    </div>
-    
-    <div class="page-header">
-        <h1>Per category</h1>
-    </div>
-
-    {% for category in category_timetables %}
-        <div class="page-header">
-            <a name="{{ category }}"></a>
-            <h2>{{ category.title() }}</h2>
-        </div>
-        <div class="row">
-        {% for field in category_timetables[category] %}
-            <div class="col-lg-6">
-                <h3>{{ field.title() }}</h3>
-                {{ timetable(category_timetables[category][field]) }}
-            </div>
-        {% endfor %}
-        </div>
-    {% endfor %}
 </div>
 
 {% endblock %}
