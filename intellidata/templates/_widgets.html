@@ -1,15 +1,15 @@
-{% macro timetable(data, show_empty = False) %}
-     <table class="table table-bordered table-hover" style="table-layout: fixed">
+{% macro timetable(data, show_empty = False, first_letter = True) %}
+     <table class="table table-bordered" style="table-layout: fixed">
         <thead>
             <tr>
                 <th></th>
-                <th class="text-center">Monday</th>
-                <th class="text-center">Tuesday</th>
-                <th class="text-center">Wednesday</th>
-                <th class="text-center">Thursday</th>
-                <th class="text-center">Friday</th>
-                <th class="text-center">Saturday</th>
-                <th class="text-center">Sunday</th>
+                <th class="text-center">{% if first_letter %}M{% else %}Monday{% endif %}</th>
+                <th class="text-center">{% if first_letter %}T{% else %}Tuesday{% endif %}</th>
+                <th class="text-center">{% if first_letter %}W{% else %}Wednesday{% endif %}</th>
+                <th class="text-center">{% if first_letter %}T{% else %}Thursday{% endif %}</th>
+                <th class="text-center">{% if first_letter %}F{% else %}Friday{% endif %}</th>
+                <th class="text-center">{% if first_letter %}S{% else %}Saturday{% endif %}</th>
+                <th class="text-center">{% if first_letter %}S{% else %}Sunday{% endif %}</th>
             </tr>
         </thead>
         <tbody>
@@ -22,7 +22,7 @@
                     <th>{{ hour }}:00</th>
                     {% for day in days %}
                         {% if hour in data['hours'] and day in data['hours'][hour] %}
-                            <td class="text-center" style="background-color: #{{ data['hours'][hour][day]['color'] }}">{{ data['hours'][hour][day]['value'] }}</td>
+                            <td class="text-center" style="background-color: #{{ data['hours'][hour][day]['color'] }}">{{ data.get('format', '%.2f') % data['hours'][hour][day]['value'] }}</td>
                         {% else %}
                             <td class="text-center" style="background-color: #ffffff"></td>
                         {% endif %}

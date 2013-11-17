@@ -1,4 +1,4 @@
-{% set link="zipcode" %}
+{% set link="basic" %}
 {% set title="Zipcode" %}
 {% extends "master.html" %}
 {% block body %}
@@ -14,23 +14,37 @@
         {% endfor %}
     </ul>
 
-    <a name="total"></a>
-    <h1>Total timetable</h1>
+    <div class="page-header">
+        <a name="total"></a>
+        <h1>Total timetable</h1>
+    </div>
 
+    <div class="row">
     {% for field in total_timetables %}
-        <h3>{{ field.title() }}</h3>
-        {{ timetable(total_timetables[field]) }}
+        <div class="col-lg-6">
+            <h3>{{ field.title() }}</h3>
+            {{ timetable(total_timetables[field]) }}
+        </div>
     {% endfor %}
-
-    <h1>Per category</h1>
+    </div>
+    
+    <div class="page-header">
+        <h1>Per category</h1>
+    </div>
 
     {% for category in category_timetables %}
-        <a name="{{ category }}"></a>
-        <h2>{{ category.title() }}</h2>
+        <div class="page-header">
+            <a name="{{ category }}"></a>
+            <h2>{{ category.title() }}</h2>
+        </div>
+        <div class="row">
         {% for field in category_timetables[category] %}
-            <h3>{{ field.title() }}</h3>
-            {{ timetable(category_timetables[category][field]) }}
+            <div class="col-lg-6">
+                <h3>{{ field.title() }}</h3>
+                {{ timetable(category_timetables[category][field]) }}
+            </div>
         {% endfor %}
+        </div>
     {% endfor %}
 </div>
 

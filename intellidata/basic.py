@@ -32,6 +32,7 @@ def generate_timetable(days_data):
             # empty_hours : set(['01', '02', '03'])
         }
         max_values[field] = 0
+    timetables['num_payments']['format'] = '%i'
 
     for day in days_data:
         day_data = days_data[day]
@@ -62,6 +63,17 @@ def generate_timetable(days_data):
                 cur_data['color'] = generate_color_code(cur_data['value'], max_value)
     return timetables
 
+@basic_blueprint.route('/zipcodes/')
+def zipcodes():
+    madrid_zipcodes    = []
+    barcelona_zipcodes = []
+    for zc in mongo.db.shop_zipcode_summary.find({}, fields=('_id',)):
+        zipcode = zc['_id']
+        if zipcode.startswith('08'):
+            barcelona_zipcodes.append(zipcode)
+        else:
+            madrid_zipcodes.append(zipcode)
+    return render_template("basic/zipcodes.html", madrid_zipcodes = sorted(madrid_zipcodes), barcelona_zipcodes = sorted(barcelona_zipcodes))
 
 @basic_blueprint.route('/zipcodes/<zipcode>')
 def zipcode(zipcode):
