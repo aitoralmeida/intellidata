@@ -95,7 +95,7 @@ def zipcode_timeline(zipcode):
         data[field] = [], []
 
     weeks_data = zipcode_data['value']['total']['weeks']
-    for week in weeks_data:
+    for week in sorted(weeks_data.keys()):
         year        = int(week[:4])
         week_number = int(week[-2:])
         start_day, _ = get_week_borders(week_number, year)
