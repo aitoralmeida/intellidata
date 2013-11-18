@@ -4,8 +4,8 @@ import glob
 
 from bbvalib import create_mongoclient
 
-DELETE_ALL           = False
-TOP_CLIENTS          = False
+DELETE_ALL           = True
+TOP_CLIENTS          = True
 SHOP_ZIPCODE_SUMMARY = True
 
 #############################################################################
@@ -169,8 +169,11 @@ def process_patterns_flat():
 
 
 if DELETE_ALL:
+    print "Recreating origin flat"
     process_origin_flat()
+    print "Recreating cube flat"
     process_cube_flat()
+    print "Recreating patterns flat"
     process_patterns_flat()
 
 
@@ -455,6 +458,7 @@ def top_clients_summary():
 
 
 if TOP_CLIENTS:
+    print "Creating top clients summary"
     top_clients_summary()
 
 
@@ -594,6 +598,7 @@ def shop_zipcode_summary():
         // We fill the fields (total)
         value['total'] = {
             'days'  : {},
+            'weeks' : {},
             'total' : empty_summary()
         };
 
@@ -754,6 +759,35 @@ def shop_zipcode_summary():
         value['categories'][self.category]['weeks'][self.week]['cubes']['total']['per_gender'][self.gender]['num_payments'] = self.num_payments;
         value['categories'][self.category]['weeks'][self.week]['cubes']['total']['per_gender'][self.gender]['total'] = self.num_payments * self.avg;
 
+        // 
+        // total outside category
+        // 
+        value['total']['weeks'][self.week] = empty_cube();
+
+        // 
+        // total / total / per_age
+        value['total']['weeks'][self.week]['total']['per_age'][self.age_code]['avg'] = self.avg;
+        value['total']['weeks'][self.week]['total']['per_age'][self.age_code]['num_payments'] = self.num_payments;
+        value['total']['weeks'][self.week]['total']['per_age'][self.age_code]['total'] = self.avg * self.num_payments;
+
+        // total / total / per_gender
+        value['total']['weeks'][self.week]['total']['per_gender'][self.gender]['avg'] = self.avg;
+        value['total']['weeks'][self.week]['total']['per_gender'][self.gender]['num_payments'] = self.num_payments;
+        value['total']['weeks'][self.week]['total']['per_gender'][self.gender]['total'] = self.avg * self.num_payments;
+
+        // total / cubes / gender / age_code
+        delete value['total']['weeks'][self.week]['cubes'][self.gender][self.age_code]['num_cards'];
+        value['total']['weeks'][self.week]['cubes'][self.gender][self.age_code]['avg'] = self.avg;
+        value['total']['weeks'][self.week]['cubes'][self.gender][self.age_code]['num_payments'] = self.num_payments;
+        value['total']['weeks'][self.week]['cubes'][self.gender][self.age_code]['total'] = self.num_payments * self.avg;
+
+        // summary
+        value['total']['weeks'][self.week]['summary'] = {
+            'avg'          : self.avg,
+            'num_payments' : self.num_payments,
+            'total'        : self.num_payments * self.avg
+        };
+
 
         // TODO: there should be category-level totals and category-independent weekly totals and non weekly totals
         // Category level total data. Individual
@@ -774,18 +808,7 @@ def shop_zipcode_summary():
         // Take the initial value, and fill it with the easy data
         var reduced_value = value;
 
-        var mergeTotalTotal = function (other_total, me_total) {
-            if (other_total['hours'] == undefined ) {
-                print("Expected total structure as first argument. Got:");
-                printjson(other_total);
-                throw new Error("Expected total structure as first argument. See the logs.");
-            } else if (me_total['hours'] == undefined ) {
-                print("Expected total structure as second argument. Got:");
-                printjson(me_total);
-                throw new Error("Expected total structure as second argument. See the logs.");
-            }
-            
-
+        var mergeBasicTotal = function (other_total, me_total) {
             // First, the basic data
             var total        = other_total['total'] + me_total['total'];
             var num_payments = other_total['num_payments'] + me_total['num_payments'];
@@ -798,7 +821,21 @@ def shop_zipcode_summary():
             other_total['total'] = total;
             other_total['avg']   = avg;
             other_total['num_payments'] = num_payments;
+        };
 
+        var mergeTotalTotal = function (other_total, me_total) {
+            if (other_total['hours'] == undefined ) {
+                print("Expected total structure as first argument. Got:");
+                printjson(other_total);
+                throw new Error("Expected total structure as first argument. See the logs.");
+            } else if (me_total['hours'] == undefined ) {
+                print("Expected total structure as second argument. Got:");
+                printjson(me_total);
+                throw new Error("Expected total structure as second argument. See the logs.");
+            }
+            
+            mergeBasicTotal(other_total, me_total);
+            
             if (me_total['min'] < other_total['min'])
                 other_total['min'] = me_total['min'];
             if (me_total['max'] > other_total['max'])
@@ -844,7 +881,53 @@ def shop_zipcode_summary():
                     mergeTotalTotal(other_days[day], me_days[day]);
                 }
             }
-        };       
+        };
+
+        var mergeCubeTotals = function(other_cubes_total, me_cubes_total){
+            // Then, cubes/total. First cubes/total/per_age
+            var other_per_age = other_cubes_total['per_age'];
+            var me_per_age   = me_cubes_total['per_age'];
+            for (var age in me_per_age) {
+                // If the existing is empty or does not exist, copy it
+                if (other_per_age[age] == undefined) {
+                    other_per_age[age] = deepcopy(me_per_age[age]);
+                } else {
+                    // Otherwise, merge
+                    var total        = other_per_age[age]['total'] + me_per_age[age]['total'];
+                    var num_payments = other_per_age[age]['num_payments'] + me_per_age[age]['num_payments'];
+                    var avg;
+                    if (num_payments == 0)
+                        avg = 0.0;
+                    else
+                        avg = 1.0 * total / num_payments;
+                    other_per_age[age]['total']        = total;
+                    other_per_age[age]['num_payments'] = num_payments;
+                    other_per_age[age]['avg']          = avg;
+                }
+            }
+ 
+            // Then cubes/total/per_gender
+            var other_per_gender = other_cubes_total['per_gender'];
+            var me_per_gender    = me_cubes_total['per_gender'];
+            for (var gender in me_per_gender) {
+                // If the existing is empty or does not exist, copy it
+                if (other_per_gender[gender] == undefined) {
+                    other_per_gender[gender] = deepcopy(me_per_gender[gender]);
+                } else {
+                    // Otherwise, merge
+                    var total        = other_per_gender[gender]['total'] + me_per_gender[gender]['total'];
+                    var num_payments = other_per_gender[gender]['num_payments'] + me_per_gender[gender]['num_payments'];
+                    var avg;
+                    if (num_payments == 0)
+                        avg = 0.0;
+                    else
+                        avg = 1.0 * total / num_payments;
+                    other_per_gender[gender]['total']        = total;
+                    other_per_gender[gender]['num_payments'] = num_payments;
+                    other_per_gender[gender]['avg']          = avg;
+                }
+            }
+        }
 
         var processCubes = function(other, me, category, month, week) {
             // First cubes/cubes
@@ -877,51 +960,24 @@ def shop_zipcode_summary():
                     }
                 }
             }
-
-            // Then, cubes/total. First cubes/total/per_age
-            var other_per_age = other['cubes']['total']['per_age'];
-            var me_per_age   = me['cubes']['total']['per_age'];
-            for (var age in me_per_age) {
-                // If the existing is empty or does not exist, copy it
-                if (other_per_age[age] == undefined) {
-                    other_per_age[age] = deepcopy(me_per_age[age]);
-                } else {
-                    // Otherwise, merge
-                    var total        = other_per_age[age]['total'] + me_per_age[age]['total'];
-                    var num_payments = other_per_age[age]['num_payments'] + me_per_age[age]['num_payments'];
-                    var avg;
-                    if (num_payments == 0)
-                        avg = 0.0;
-                    else
-                        avg = 1.0 * total / num_payments;
-                    other_per_age[age]['total']        = total;
-                    other_per_age[age]['num_payments'] = num_payments;
-                    other_per_age[age]['avg']          = avg;
-                }
-            }
- 
-            // Then cubes/total/per_gender
-            var other_per_gender = other['cubes']['total']['per_gender'];
-            var me_per_gender    = me['cubes']['total']['per_gender'];
-            for (var gender in me_per_gender) {
-                // If the existing is empty or does not exist, copy it
-                if (other_per_gender[gender] == undefined) {
-                    other_per_gender[gender] = deepcopy(me_per_gender[gender]);
-                } else {
-                    // Otherwise, merge
-                    var total        = other_per_gender[gender]['total'] + me_per_gender[gender]['total'];
-                    var num_payments = other_per_gender[gender]['num_payments'] + me_per_gender[gender]['num_payments'];
-                    var avg;
-                    if (num_payments == 0)
-                        avg = 0.0;
-                    else
-                        avg = 1.0 * total / num_payments;
-                    other_per_gender[gender]['total']        = total;
-                    other_per_gender[gender]['num_payments'] = num_payments;
-                    other_per_gender[gender]['avg']          = avg;
-                }
-            }
+            
+            mergeCubeTotals(other['cubes']['total'], me['cubes']['total']);
         };
+
+        var mergeCubes = function(other, me) {
+            for (var gender in me) {
+                for (var age_code in me[gender]) {
+                    var other_data = other[gender][age_code];
+                    var me_data = me[gender][age_code];
+
+                    if (me_data['num_payments'] >= 1) {
+                           other_data['num_payments'] += me_data['num_payments'];
+                           other_data['total'] += me_data['total'];
+                           other_data['avg'] += other_data['total'] / other_data['num_payments'];
+                    }
+                }
+            }
+        }
 
         // Take all values, and merge them one by one in reduced_value
         values.forEach(function(value) {
@@ -1003,8 +1059,17 @@ def shop_zipcode_summary():
             mergeTotalDays(reduced_value['total']['days'], value['total']['days']);
             // print("Calling total from total");
             mergeTotalTotal(reduced_value['total']['total'], value['total']['total']);
+            // merge weeks summary
+            for (var week in value['total']['weeks']) {
+                if (reduced_value['total']['weeks'][week] == undefined) {
+                    reduced_value['total']['weeks'][week] = deepcopy(value['total']['weeks'][week]);
+                } else {
+                    mergeCubes(reduced_value['total']['weeks'][week]['cubes'], value['total']['weeks'][week]['cubes']);
+                    mergeCubeTotals(reduced_value['total']['weeks'][week]['total'], value['total']['weeks'][week]['total']);
+                    mergeBasicTotal(reduced_value['total']['weeks'][week]['summary'], value['total']['weeks'][week]['summary']);
+                }
+            };
         });
-        
 
         return reduced_value;
     }""" % dict( CATEGORIES = categories, SHARED = shared_code ))
@@ -1012,31 +1077,39 @@ def shop_zipcode_summary():
     # dummy_reduce = Code("""function(key, values) { return values[0] }""")
     # reduce_func = dummy_reduce
 
-    # print map_patterns_func
-    # print reduce_func
+#     print map_patterns_func
+#     print reduce_func
 
     nonAtomic = False
 
-    print "Procesando 1"
-    db.patterns_month.map_reduce(
-        map_patterns_func,
-        reduce_func, 
-        out=SON([("reduce", "shop_zipcode_summary"), ('nonAtomic', nonAtomic)]))
+    PATTERNS = True
+    CUBE_MONTH = True
+    CUBE_WEEK = True
 
-    print "Procesando 2"
-    db.cube_month.map_reduce(
-        map_cube_month_func,
-        reduce_func, 
-        out=SON([("reduce", "shop_zipcode_summary"), ('nonAtomic', nonAtomic)]))
+    if PATTERNS:
+        print "Procesando patterns_month"
+        db.patterns_month.map_reduce(
+            map_patterns_func,
+            reduce_func, 
+            out=SON([("reduce", "shop_zipcode_summary"), ('nonAtomic', nonAtomic)]))
 
-    print "Procesando 3"
-    db.cube_week.map_reduce(
-        map_cube_week_func,
-        reduce_func, 
-        out=SON([("reduce", "shop_zipcode_summary"), ('nonAtomic', nonAtomic)]))
+    if CUBE_MONTH:
+        print "Procesando cube_month"
+        db.cube_month.map_reduce(
+            map_cube_month_func,
+            reduce_func, 
+            out=SON([("reduce", "shop_zipcode_summary"), ('nonAtomic', nonAtomic)]))
+
+    if CUBE_WEEK:
+        print "Procesando cube_week"
+        db.cube_week.map_reduce(
+            map_cube_week_func,
+            reduce_func, 
+            out=SON([("reduce", "shop_zipcode_summary"), ('nonAtomic', nonAtomic)]))
 
     print "Hecho"
 
 if SHOP_ZIPCODE_SUMMARY:
+    print "Creating shop zipcode summary"
     shop_zipcode_summary()
 

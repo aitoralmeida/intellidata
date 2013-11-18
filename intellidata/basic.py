@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template
 
 from intellidata import mongo
+from .util import get_week_borders
 
 basic_blueprint = Blueprint('basic', __name__)
 
@@ -79,9 +80,31 @@ def zipcodes():
 def zipcode_summary(zipcode):
     return render_template("basic/zipcode.html", zipcode = zipcode)
 
+
+
 @basic_blueprint.route('/zipcodes/<zipcode>/timeline/')
 def zipcode_timeline(zipcode):
-    return render_template("basic/zipcode_timeline.html", zipcode = zipcode)
+    zipcode_data = next(mongo.db.shop_zipcode_summary.find({ '_id' : zipcode }), None)
+    if zipcode_data is None:
+        return render_template("errors.html", message = "zipcode not found")
+
+    fields = ['avg', 'num_payments', 'total']
+
+    data = {}
+    for field in fields:
+        data[field] = [], []
+
+    weeks_data = zipcode_data['value']['total']['weeks']
+    for week in weeks_data:
+        year        = int(week[:4])
+        week_number = int(week[-2:])
+        start_day, _ = get_week_borders(week_number, year)
+        
+        for field in fields:
+            data[field][0].append(start_day.strftime("%d/%m/%Y"))
+            data[field][1].append(weeks_data[week]['summary'][field])
+
+    return render_template("basic/zipcode_timeline.html", zipcode = zipcode, data = data)
 
 @basic_blueprint.route('/zipcodes/<zipcode>/timetables/')
 def zipcode_timetables(zipcode):
@@ -108,4 +131,8 @@ def zipcode_timetables_category(zipcode, category):
     category_timetable = generate_timetable(category_data['total']['days'])
 
     return render_template("basic/zipcode_timetable_category.html", category_name = category.title(), category_timetable = category_timetable)
+
+@basic_blueprint.route("/zipcodes/<zipcode>/top_clients/")
+def zipcode_top_clients(zipcode):
+    return ":-)"
 

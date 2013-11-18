@@ -35,3 +35,24 @@
    
 
 {% endmacro %}
+
+{% macro timeline(headers, data, table_id) %}
+    <table id="{{ table_id }}">
+        <tfoot>
+            <tr>
+                {% for header in headers %}
+                <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </tfoot>
+        <tbody>
+            <tr>
+                {% for col in data %}
+                    <td>{{ col }}</td>
+                {% endfor %} 
+            </tr>
+        </tbody>
+    </table>
+    <div id="holder_{{ table_id }}"></div>
+
+{% endmacro %}

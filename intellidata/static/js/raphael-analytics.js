@@ -12,15 +12,20 @@ Raphael.fn.drawGrid = function (x, y, w, h, wv, hv, color) {
     return this.path(path.join(",")).attr({stroke: color});
 };
 
-$(function () {
-    $("#data").css({
+function loadTimetable(table_id, unit) {
+    var holder_id = "holder_" + table_id;
+    var table_id = "#" + table_id;
+    if (unit == undefined) {
+        unit = "euro";
+    }
+
+    $(table_id).css({
         position: "absolute",
         left: "-9999em",
         top: "-9999em"
     });
-});
 
-window.onload = function () {
+
     function getAnchors(p1x, p1y, p2x, p2y, p3x, p3y) {
         var l1 = (p2x - p1x) / 2,
             l2 = (p3x - p2x) / 2,
@@ -43,10 +48,10 @@ window.onload = function () {
     // Grab the data
     var labels = [],
         data = [];
-    $("#data tfoot th").each(function () {
+    $(table_id + " tfoot th").each(function () {
         labels.push($(this).html());
     });
-    $("#data tbody td").each(function () {
+    $(table_id + " tbody td").each(function () {
         data.push($(this).html());
     });
     
@@ -58,7 +63,7 @@ window.onload = function () {
         topgutter = 20,
         colorhue = .6 || Math.random(),
         color = "hsl(" + [colorhue, .5, .5] + ")",
-        r = Raphael("holder", width, height),
+        r = Raphael(holder_id, width, height),
         txt = {font: '12px Helvetica, Arial', fill: "#fff"},
         txt1 = {font: '10px Helvetica, Arial', fill: "#fff"},
         txt2 = {font: '12px Helvetica, Arial', fill: "#000"},
@@ -115,8 +120,8 @@ window.onload = function () {
                 lx = label[0].transform()[0][1] + ppp.dx;
                 ly = label[0].transform()[0][2] + ppp.dy;
                 frame.show().stop().animate(anim);
-                label[0].attr({text: data + " hit" + (data == 1 ? "" : "s")}).show().stop().animateWith(frame, anim, {transform: ["t", lx, ly]}, 200 * is_label_visible);
-                label[1].attr({text: lbl + " September 2008"}).show().stop().animateWith(frame, anim, {transform: ["t", lx, ly]}, 200 * is_label_visible);
+                label[0].attr({text: data + " " + unit + (data == 1 ? "" : "s")}).show().stop().animateWith(frame, anim, {transform: ["t", lx, ly]}, 200 * is_label_visible);
+                label[1].attr({text: lbl }).show().stop().animateWith(frame, anim, {transform: ["t", lx, ly]}, 200 * is_label_visible);
                 dot.attr("r", 6);
                 is_label_visible = true;
             }, function () {
