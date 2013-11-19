@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+<Document>
+  <!-- Begin Style Definitions -->
+  <Style id="area1">
+    <LineStyle>
+      <color>FFFF0000</color>
+      <width>1</width>
+    </LineStyle>
+    <PolyStyle>
+      <color>640080FF</color>
+      <fill>1</fill>
+      <outline>1</outline>
+    </PolyStyle>
+  </Style>
+  <Folder>
+    <name>Area Features</name>
+    <description>Area Features</description>
+    <Placemark>
+      <description><![CDATA[Unknown Area Type<BR><BR><B>COD_POSTAL</B> = 33800<BR><BR><B>Area</B> = 166]]></description>
+      <styleUrl>#area1</styleUrl>
+      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>
+              -6.5486850740,43.1873970021,0
+              -6.5487077280,43.1874343201,0
+              -6.5549750330,43.1817970261,0
+              -6.5554213530,43.1802978501,0
+              -6.5536468200,43.1748289201,0
+              -6.5535931590,43.1746635421,0
+              -6.5517621040,43.1742439261,0
+              -6.5487056070,43.1712086091,0
+              -6.5478435160,43.1716166941,0
+              -6.5429606670,43.1669372971,0
+              -6.5395101610,43.1684325151,0
+              -6.5438808020,43.1746434251,0
+              -6.5448582970,43.1749409241,0
+              -6.5448446280,43.1750564561,0
+              -6.5474081040,43.1791038501,0
+              -6.5466785430,43.1844291671,0
+              -6.5404720310,43.1780700671,0
+              -6.5359611510,43.1788520801,0
+              -6.5458288190,43.1869316091,0
+              -6.5469007490,43.1866340621,0
+              -6.5486850740,43.1873970021,0
+            </coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Folder>
+</Document>
+</kml>

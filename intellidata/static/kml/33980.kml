@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+<Document>
+  <!-- Begin Style Definitions -->
+  <Style id="area1">
+    <LineStyle>
+      <color>FFFF0000</color>
+      <width>1</width>
+    </LineStyle>
+    <PolyStyle>
+      <color>640080FF</color>
+      <fill>1</fill>
+      <outline>1</outline>
+    </PolyStyle>
+  </Style>
+  <Folder>
+    <name>Area Features</name>
+    <description>Area Features</description>
+    <Placemark>
+      <description><![CDATA[Unknown Area Type<BR><BR><B>COD_POSTAL</B> = 33980<BR><BR><B>Area</B> = 60]]></description>
+      <styleUrl>#area1</styleUrl>
+      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>
+              -5.5798028870,43.2684609841,0
+              -5.5794839860,43.2681198111,0
+              -5.5765953060,43.2679595941,0
+              -5.5724053380,43.2703514091,0
+              -5.5687193870,43.2744789111,0
+              -5.5692567830,43.2750854481,0
+              -5.5741641670,43.2780512671,0
+              -5.5743960230,43.2779631811,0
+              -5.5750553600,43.2775251191,0
+              -5.5774517290,43.2750309701,0
+              -5.5776369450,43.2747476411,0
+              -5.5776138870,43.2739107721,0
+              -5.5778946870,43.2732651401,0
+              -5.5779815840,43.2726959451,0
+              -5.5778551680,43.2723296131,0
+              -5.5778587830,43.2721224431,0
+              -5.5786600390,43.2706726771,0
+              -5.5791230940,43.2702570501,0
+              -5.5794665180,43.2696370001,0
+              -5.5795584770,43.2688965961,0
+              -5.5798028870,43.2684609841,0
+            </coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <description><![CDATA[Unknown Area Type<BR><BR><B>COD_POSTAL</B> = 33980<BR><BR><B>Area</B> = 21]]></description>
+      <styleUrl>#area1</styleUrl>
+      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>
+              -5.5600681310,43.2446746821,0
+              -5.5619983670,43.2487297051,0
+              -5.5664749150,43.2477722161,0
+              -5.5672769550,43.2462768541,0
+              -5.5606255530,43.2434959401,0
+              -5.5600681310,43.2446746821,0
+            </coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Folder>
+</Document>
+</kml>

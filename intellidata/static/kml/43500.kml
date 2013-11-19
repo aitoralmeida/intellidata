@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+<Document>
+  <!-- Begin Style Definitions -->
+  <Style id="area1">
+    <LineStyle>
+      <color>FFFF0000</color>
+      <width>1</width>
+    </LineStyle>
+    <PolyStyle>
+      <color>640080FF</color>
+      <fill>1</fill>
+      <outline>1</outline>
+    </PolyStyle>
+  </Style>
+  <Folder>
+    <name>Area Features</name>
+    <description>Area Features</description>
+    <Placemark>
+      <description><![CDATA[Unknown Area Type<BR><BR><B>COD_POSTAL</B> = 43500<BR><BR><B>Area</B> = 383]]></description>
+      <styleUrl>#area1</styleUrl>
+      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>
+              0.5068523740,40.8069744161,0
+              0.5123146270,40.8073034671,0
+              0.5202172080,40.8057029441,0
+              0.5258270660,40.8045667711,0
+              0.5298203440,40.8084038261,0
+              0.5311508760,40.8096823051,0
+              0.5330370200,40.8103825981,0
+              0.5342749240,40.8113391601,0
+              0.5348376080,40.8135336271,0
+              0.5226876520,40.8256835831,0
+              0.5185440400,40.8218577521,0
+              0.5103747990,40.8217576311,0
+              0.5103748510,40.8217575971,0
+              0.5089427600,40.8179821901,0
+              0.5087525500,40.8176689061,0
+              0.5081967390,40.8167535591,0
+              0.5078836420,40.8162379311,0
+              0.5078780610,40.8162287581,0
+              0.5078701470,40.8162156971,0
+              0.5057973350,40.8128018291,0
+              0.5055918050,40.8124633261,0
+              0.5037887760,40.8094934301,0
+              0.5100357240,40.8106175071,0
+              0.5072434800,40.8074220341,0
+              0.5068523740,40.8069744161,0
+            </coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Folder>
+</Document>
+</kml>

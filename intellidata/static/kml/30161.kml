@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+<Document>
+  <!-- Begin Style Definitions -->
+  <Style id="area1">
+    <LineStyle>
+      <color>FFFF0000</color>
+      <width>1</width>
+    </LineStyle>
+    <PolyStyle>
+      <color>640080FF</color>
+      <fill>1</fill>
+      <outline>1</outline>
+    </PolyStyle>
+  </Style>
+  <Folder>
+    <name>Area Features</name>
+    <description>Area Features</description>
+    <Placemark>
+      <description><![CDATA[Unknown Area Type<BR><BR><B>COD_POSTAL</B> = 30161<BR><BR><B>Area</B> = 657]]></description>
+      <styleUrl>#area1</styleUrl>
+      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>
+              -1.0712016720,38.0221851471,0
+              -1.0717027780,38.0221016291,0
+              -1.0717893040,38.0222054601,0
+              -1.0812081590,38.0148872131,0
+              -1.0799964590,38.0121454831,0
+              -1.0814524320,38.0106453891,0
+              -1.0848607340,38.0096306201,0
+              -1.0851364870,38.0042130011,0
+              -1.0867052120,38.0014634421,0
+              -1.0891641990,37.9971625871,0
+              -1.0872192240,37.9957452181,0
+              -1.0873386960,37.9956284021,0
+              -1.0841098190,37.9934204201,0
+              -1.0835182110,37.9930158641,0
+              -1.0783859670,37.9894949061,0
+              -1.0727415710,37.9863237941,0
+              -1.0691350600,37.9875983471,0
+              -1.0671965520,37.9882714401,0
+              -1.0665978760,38.0008436421,0
+              -1.0656659660,38.0023968251,0
+              -1.0493057730,38.0046748261,0
+              -1.0489733960,38.0046045161,0
+              -1.0533761840,38.0093804211,0
+              -1.0687394520,38.0163715711,0
+              -1.0712016720,38.0221851471,0
+            </coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Folder>
+</Document>
+</kml>

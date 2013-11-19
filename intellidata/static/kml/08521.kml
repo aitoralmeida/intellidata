@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+<Document>
+  <!-- Begin Style Definitions -->
+  <Style id="area1">
+    <LineStyle>
+      <color>FFFF0000</color>
+      <width>1</width>
+    </LineStyle>
+    <PolyStyle>
+      <color>640080FF</color>
+      <fill>1</fill>
+      <outline>1</outline>
+    </PolyStyle>
+  </Style>
+  <Folder>
+    <name>Area Features</name>
+    <description>Area Features</description>
+    <Placemark>
+      <description><![CDATA[Unknown Area Type<BR><BR><B>COD_POSTAL</B> = 08521<BR><BR><B>Area</B> = 20]]></description>
+      <styleUrl>#area1</styleUrl>
+      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>
+              2.2985020730,41.6154283521,0
+              2.2992591250,41.6163041581,0
+              2.2991696300,41.6184967851,0
+              2.3012280150,41.6188547651,0
+              2.3012503890,41.6194364831,0
+              2.2967980130,41.6208684021,0
+              2.2952791640,41.6202855821,0
+              2.2948133480,41.6187975751,0
+              2.2973573570,41.6182730481,0
+              2.2974915990,41.6174675931,0
+              2.2944263950,41.6175570881,0
+              2.2941638800,41.6163593631,0
+              2.2946105310,41.6162586921,0
+              2.2947846400,41.6162195631,0
+              2.2947923090,41.6162178451,0
+              2.2949160060,41.6161901191,0
+              2.2953576960,41.6160911131,0
+              2.2953787430,41.6160864901,0
+              2.2961493980,41.6159178021,0
+              2.2963626650,41.6158711851,0
+              2.2965276110,41.6158351151,0
+              2.2965278170,41.6158350691,0
+              2.2969583940,41.6157409051,0
+              2.2970258290,41.6157261521,0
+              2.2985020730,41.6154283521,0
+            </coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Folder>
+</Document>
+</kml>
