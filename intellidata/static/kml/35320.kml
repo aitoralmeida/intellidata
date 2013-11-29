@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+<Document>
+  <!-- Begin Style Definitions -->
+  <Style id="area1">
+    <LineStyle>
+      <color>FFFF0000</color>
+      <width>1</width>
+    </LineStyle>
+    <PolyStyle>
+      <color>640080FF</color>
+      <fill>1</fill>
+      <outline>1</outline>
+    </PolyStyle>
+  </Style>
+  <Folder>
+    <name>Area Features</name>
+    <description>Area Features</description>
+    <Placemark>
+      <description><![CDATA[Unknown Area Type<BR><BR><B>COD_POSTAL</B> = 35320<BR><BR><B>Area</B> = 46]]></description>
+      <styleUrl>#area1</styleUrl>
+      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>
+              -15.5399500310,28.0134317052,0
+              -15.5436396850,28.0156240092,0
+              -15.5475068310,28.0078076672,0
+              -15.5469231830,28.0065240252,0
+              -15.5390229540,28.0082235272,0
+              -15.5392089200,28.0103158872,0
+              -15.5406289390,28.0131845302,0
+              -15.5399500310,28.0134317052,0
+            </coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+    <Placemark>
+      <description><![CDATA[Unknown Area Type<BR><BR><B>COD_POSTAL</B> = 35320<BR><BR><B>Area</B> = 32]]></description>
+      <styleUrl>#area1</styleUrl>
+      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>
+              -15.5339121890,28.0092046352,0
+              -15.5336901460,28.0090464102,0
+              -15.5366705890,28.0044078432,0
+              -15.5367288040,28.0033599832,0
+              -15.5355063010,28.0032435542,0
+              -15.5316641500,28.0037092702,0
+              -15.5293192150,28.0082495632,0
+              -15.5304637370,28.0106211222,0
+              -15.5339121890,28.0092046352,0
+            </coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Folder>
+</Document>
+</kml>
