@@ -149,10 +149,10 @@ def analyze_graph(G):
     return G
  
 # ALL RELATIONS   
-#G = get_total_relations() 
-#G = update_location_data(G, './data/all_zipcodes.json')
-#G = analyze_graph(G)
-#export_gexf(G, './data/processed_graph/directed.gexf')  
+G = get_total_relations() 
+G = update_location_data(G, './data/all_zipcodes.json')
+# G = analyze_graph(G)
+export_gexf(G, './data/processed_graph/directed.gexf')  
 
 #BY WEEK AND CATEGORY
 #G = get_relations_by_category('total','es_auto')
@@ -161,9 +161,9 @@ def analyze_graph(G):
 #export_gexf(G, './data/processed_graph/directed_es_auto_total.gexf')  
 
 ##MAXIMUN DISTANCE
-G = get_total_relations(99)
-G = update_location_data(G, './data/all_zipcodes.json')
-export_gexf(G, './data/processed_graph/directed_es_100km.gexf') 
+#G = get_total_relations(99)
+#G = update_location_data(G, './data/all_zipcodes.json')
+#export_gexf(G, './data/processed_graph/directed_es_100km.gexf') 
 
    
 print 'fin' 
