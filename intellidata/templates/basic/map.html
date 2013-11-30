@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <script src="{{ url_for('static', filename='js/jquery-1.8.3.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/raphael-min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/kartograph.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/jquery.qtip.js') }}"></script>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='js/jquery.qtip.css') }}"/>
+ <script language="JavaScript"> 
+var map;
+function loadMap(){
+
+map = Kartograph.map('#map', 600, 0);
+
+ 
+map.loadMap('{{ svg_file }}', function() {
+  map.loadCSS('{{ url_for('static', filename='geo/maps.css') }}', function() {
+    map.addLayer('background');
+    map.addLayer('world');
+    map.addLayer('depth');
+    map.addLayer('trees');
+    map.addLayer('crops');
+    map.addLayer('zipcodes');
+
+    setColors(1);
+    $.fn.qtip.defaults.style.classes = 'qtip-light';
+
+    map.getLayer('zipcodes').tooltips(function(data) {
+        return [data.name, 'Incomes: <b>' + data.income + '</b><br/>Payments: <b>'+ data.num_payments + '</b>'];
+    });
+    
+    
+
+    });
+}, { padding: -30 })
+
+}
+
+function setColors(value){
+ map.getLayer('zipcodes').style('fill', function(data) {
+
+    var bgColor;
+    if(data.edad > 30)
+        bgColor = "#ff0000";
+    else
+        bgColor = "#0000ff";
+    
+    return bgColor;
+ });
+}
+</script>
+    </head>
+    <body onLoad="loadMap()">
+        <div id="map"></div>
+    </body>
+</html>
