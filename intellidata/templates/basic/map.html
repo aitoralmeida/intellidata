@@ -1,18 +1,38 @@
-<html>
-    <head>
+{% set link="basic" %}
+{% set title="Zipcode" %}
+{% extends "master.html" %}
+{% block body %}
+    
+    <div class="container text-center">
+        <div class="alert alert-error" id="error_message">
+            <h1>There was an error accessing data. Check <a href="{{ url_for('.zipcode_map_file', zipcode = zipcode) }}">this</a>. </h1>
+        </div>
+        <div class="alert" id="generating_file_message">
+            <h1>Generating map...</h1>
+        </div>
+        <div class="alert" id="processing_message_alert">
+            <h1>Processing map...</h1>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+{% endblock %}
+{% block scripts %}
         <script src="{{ url_for('static', filename='js/jquery-1.8.3.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/raphael-min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/kartograph.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/jquery.qtip.js') }}"></script>
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='js/jquery.qtip.css') }}"/>
+
  <script language="JavaScript"> 
 var map;
-function loadMap(){
+function loadMap(url){
 
 map = Kartograph.map('#map', 600, 0);
 
  
-map.loadMap('{{ svg_file }}', function() {
+map.loadMap(url, function() {
   map.loadCSS('{{ url_for('static', filename='geo/maps.css') }}', function() {
     map.addLayer('background');
     map.addLayer('world');
@@ -28,7 +48,7 @@ map.loadMap('{{ svg_file }}', function() {
         return [data.name, 'Incomes: <b>' + data.income + '</b><br/>Payments: <b>'+ data.num_payments + '</b>'];
     });
     
-    
+    $("#processing_message_alert").hide();
 
     });
 }, { padding: -30 })
@@ -47,9 +67,23 @@ function setColors(value){
     return bgColor;
  });
 }
+
+$(document).ready(function() {
+    $("#processing_message_alert").hide();
+    $("#error_message").hide();
+    $.get( "{{ url_for('.zipcode_map_file', zipcode = zipcode) }}", function() {})
+        .done(function(data) {
+            $("#generating_file_message").hide();
+            $("#processing_message_alert").show();
+            var data = $.parseJSON(data);
+            loadMap(data["url"]);
+        })
+        .fail(function() {
+            $("#generating_file_message").hide();
+            $("#error_message").show();            
+        });
+});
 </script>
-    </head>
-    <body onLoad="loadMap()">
-        <div id="map"></div>
-    </body>
-</html>
+
+
+{% endblock %}

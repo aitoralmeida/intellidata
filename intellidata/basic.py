@@ -1,3 +1,5 @@
+import json
+
 from flask import Blueprint, render_template, url_for
 
 from intellidata import mongo
@@ -83,6 +85,10 @@ def zipcode_summary(zipcode):
 
 @basic_blueprint.route('/zipcodes/<zipcode>/map/')
 def zipcode_map(zipcode):
+    return render_template("basic/map.html", zipcode = zipcode)
+
+@basic_blueprint.route('/zipcodes/<zipcode>/map/filepath/')
+def zipcode_map_file(zipcode):
     zipcode_data = next(mongo.db.top_clients_summary.find({ '_id' : zipcode }), None)
     data = {}
 
@@ -95,7 +101,7 @@ def zipcode_map(zipcode):
 
     svg_file_path = generate_zipcodes_map(data, zipcode, 'total', 'incomes')
     svg_file_path = 'geo/' + svg_file_path.split('/')[-1]
-    return render_template("basic/map.html", svg_file = url_for('static', filename = svg_file_path))
+    return json.dumps({ 'url' : url_for('static', filename = svg_file_path) })
 
 
 @basic_blueprint.route('/zipcodes/<zipcode>/timeline/')
