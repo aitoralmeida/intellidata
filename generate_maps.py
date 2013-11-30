@@ -36,7 +36,7 @@ code = """
 }
 """
 
-for i in range(256):
+for i in range(257):
     blue  = hex(int(256 - i)).split('x')[1].zfill(2)
     green = hex(int(256 - i)).split('x')[1].zfill(2)
     color = '#ff%s%s' % (green, blue)

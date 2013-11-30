@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, url_for
 
 from intellidata import mongo
+from .geotools import generate_zipcodes_map
 from .util import get_week_borders
 
 basic_blueprint = Blueprint('basic', __name__)
@@ -80,6 +81,21 @@ def zipcodes():
 def zipcode_summary(zipcode):
     return render_template("basic/zipcode.html", zipcode = zipcode)
 
+@basic_blueprint.route('/zipcodes/<zipcode>/map/')
+def zipcode_map(zipcode):
+    zipcode_data = next(mongo.db.top_clients_summary.find({ '_id' : zipcode }), None)
+    data = {}
+
+    for zcode, zdata in zipcode_data['value']['home_zipcodes'].iteritems():
+        data[zcode] = dict(
+            incomes       = zdata['per_week']['total']['total']['incomes'],
+            num_cards     = zdata['per_week']['total']['total']['num_cards'],
+            num_payments  = zdata['per_week']['total']['total']['num_payments']
+        )
+
+    svg_file_path = generate_zipcodes_map(data, zipcode, 'total', 'incomes')
+    svg_file_path = 'geo/' + svg_file_path.split('/')[-1]
+    return render_template("basic/map.html", svg_file = url_for('static', filename = svg_file_path))
 
 
 @basic_blueprint.route('/zipcodes/<zipcode>/timeline/')

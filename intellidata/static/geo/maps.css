@@ -1058,3 +1058,7 @@
 #zipcodes[Fullposition=255] {
     fill: #ff0101;
 }
+
+#zipcodes[Fullposition=256] {
+    fill: #ff0000;
+}

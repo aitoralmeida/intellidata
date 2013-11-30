@@ -77,13 +77,13 @@ def generate_zipcodes_map(data, zipcode, identifier, key_field):
             "longitudes": 1, 
             "styles": { "stroke-width": "0.3px" } 
        },
-#        "world":{
-#             "src": "data/geo/ne_10m_admin_0_countries.shp"
-#         },
-       "world" : {
-           "src" : "data/geo/ne_50m_admin_0_countries.shp"
-       },
-
+       "world":{
+            "src": "data/geo/ne_10m_admin_0_countries.shp"
+        },
+#        "world" : {
+#            "src" : "data/geo/ne_50m_admin_0_countries.shp"
+#        },
+# 
        "zipcodes":{
            "src": shp_file_path,
            "attributes": attributes
