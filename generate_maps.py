@@ -37,12 +37,15 @@ code = """
 """
 
 for i in range(257):
-    blue  = hex(int(256 - i)).split('x')[1].zfill(2)
-    green = hex(int(256 - i)).split('x')[1].zfill(2)
-    color = '#ff%s%s' % (green, blue)
+    if i == 0:
+        color = '#fff'
+    else:
+        blue  = hex(int(256 - i)).split('x')[1].zfill(2)
+        green = hex(int(256 - i)).split('x')[1].zfill(2)
+        color = '#ff%s%s' % (green, blue)
 
     code += """
-#zipcodes[Fullposition=%(pos)s] {
+#zipcodes[Position=%(pos)s] {
     fill: %(color)s;
 }
 """ % dict(pos = i, color = color)

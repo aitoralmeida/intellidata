@@ -8,7 +8,7 @@
     <h2>Gasto medio</h2>
     {{ timeline(data['avg'][0], data['avg'][1], "avg") }}
     <h2>Pagos</h2>
-    {{ timeline(data['num_payments'][0], data['num_payments'][1], "num_payments") }}
+    {{ timeline(data['num_payments'][0], data['num_payments'][1], "num_payments", "%i") }}
     <h2>Gasto total</h2>
     {{ timeline(data['total'][0], data['total'][1], "total") }}
 </div>

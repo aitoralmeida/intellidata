@@ -36,7 +36,7 @@
 
 {% endmacro %}
 
-{% macro timeline(headers, data, table_id) %}
+{% macro timeline(headers, data, table_id, format = '%.2f') %}
     <table id="{{ table_id }}">
         <tfoot>
             <tr>
@@ -48,7 +48,7 @@
         <tbody>
             <tr>
                 {% for col in data %}
-                    <td>{{ col }}</td>
+                    <td>{{ format % col }}</td>
                 {% endfor %} 
             </tr>
         </tbody>

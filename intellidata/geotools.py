@@ -9,7 +9,7 @@ from kartograph import Kartograph
 from kartograph.options import read_map_config
 
 # TODO: Put to True
-USE_CACHE = False
+USE_CACHE = True
 CACHE_KML = USE_CACHE and True
 CACHE_SHP = CACHE_KML  and True
 CACHE_MAP = CACHE_SHP  and True
@@ -59,9 +59,8 @@ def generate_zipcodes_map(data, zipcode, identifier, key_field):
             all_fields.add(field)
 
     sorted_fields = sorted(list(all_fields))
-    attributes = {'Fullposition' : 'Fullposition'}
+    attributes = {'Position' : 'Position', 'ZCode' : 'ZCode'}
     for sorted_field in sorted_fields:
-        attributes[sorted_field] = sorted_field
         attributes[sorted_field.title()] = sorted_field.title()
 
     kartograph_settings = {
@@ -78,12 +77,8 @@ def generate_zipcodes_map(data, zipcode, identifier, key_field):
             "styles": { "stroke-width": "0.3px" } 
        },
        "world":{
-            "src": "data/geo/ne_10m_admin_0_countries.shp"
+            "src": "data/geo/ne_50m_admin_0_countries.shp"
         },
-#        "world" : {
-#            "src" : "data/geo/ne_50m_admin_0_countries.shp"
-#        },
-# 
        "zipcodes":{
            "src": shp_file_path,
            "attributes": attributes
@@ -115,8 +110,6 @@ def obtain_shp_file(data, zipcode, identifier, key_field, data_hash):
     if CACHE_SHP and os.path.exists(shp_file_with_extension):
         return shp_file_with_extension
     
-    fields = [('DeletionFlag', 'C', 1, 0), ['Fullposition', 'N', 10, 0], ['Zipcode', 'C', 5, 0]]
-
     positions = {}
     max_value = 0
     all_fields = set()
@@ -132,13 +125,16 @@ def obtain_shp_file(data, zipcode, identifier, key_field, data_hash):
         # [::-1] is because KML provides the data in a format and kartography expects other (clockwise vs. not clockwise)
         positions[zcode] = coordinates[::-1]
         for field in zdata:
-            all_fields.add(field)
+            all_fields.add(field.title())
         max_value = max(max_value, zdata[key_field])
 
     steps = max_value / 256.0
     sorted_fields = sorted(list(all_fields))
+    fields = [('DeletionFlag', 'C', 1, 0)]
     for field in sorted_fields:
         fields.append([field, 'C', 32, 0])
+    fields.append(['Position', 'N', 10, 0])
+    fields.append(['ZCode', 'C', 32, 0])
 
     records = []
     polygons = []
@@ -146,10 +142,12 @@ def obtain_shp_file(data, zipcode, identifier, key_field, data_hash):
     w = shapefile.Writer(shapefile.POLYGON)
 
     for zcode, zdata in data.iteritems():
-        step = int(zdata[key_field] / steps)
-        record = [step,zcode]
+        step = int(zdata[key_field.lower()] / steps)
+        record = []
         for field in sorted_fields:
-            record.append(str(zdata[field]))
+            record.append(str(zdata[field.lower()]))
+        record.append(step)
+        record.append(str(zcode))
         records.append(record)
         w.poly(parts=[ positions[zcode] ])
     
@@ -194,7 +192,8 @@ def obtain_kml_coordinates(zipcode):
     return final_coordinates
 
 print "Creating KML cache"
-for kml in glob.glob("intellidata/static/kmls/*.kml"):
+for kml in glob.glob("intellidata/static/kml/*.kml"):
     zipcode = os.path.basename(kml).split('.')[0]
     obtain_kml_coordinates(zipcode)
+print "[done]"
 
