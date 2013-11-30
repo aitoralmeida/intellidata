@@ -14,6 +14,12 @@ import community
 from bbvalib import create_mongoclient
 from geo_tools import haversine
 
+categories = ['es_auto','es_barsandrestaurants','es_contents','es_fashion',
+              'es_food','es_health','es_home','es_hotelservices','es_hyper',
+              'es_leisure','es_otherservices','es_propertyservices',
+              'es_sportsandtoys','es_tech','es_transportation','es_travel',
+              'es_wellnessandbeauty']
+
 json_data=open('./data/all_zipcodes.json')
 zipcodes = json.load(json_data)
 json_data.close() 
@@ -42,7 +48,7 @@ def export_gexf(G, path):
 #    show_info(G)
 #    return G
     
-def get_total_relations(min_km = 0):    
+def get_total_relations(min_km = -1):    
     bbva = create_mongoclient()    
     weekly = bbva.top_clients_week  
     
@@ -72,7 +78,7 @@ def get_lon_lat(zipcode):
         
     return float(lat), float(lon)
     
-def get_relations_by_category(week, category, min_km = 0):
+def get_relations_by_category(week, category, min_km = -1):
     bbva = create_mongoclient()
     summary = bbva.top_clients_summary
     all_transactions = summary.find()
@@ -112,6 +118,57 @@ def update_location_data(G, path):
             G.node[node]['lon'] = -1.58
         
     return G
+
+# most_central: the node with the highest eigenvector centrality. The 'most important'
+# zipcode in the network
+# biggest_traveler: the node with the biggest outdegree. The zipcode that have has 
+# most transaction in other zipcodes
+# biggest_receiver: the node with the biggest indegree. The zipcode that has received
+# most transactions from other zipcodes
+# biggest_expender: the origin node of the edge with the highest weight. The originating
+# zipcode for the biggest transaction.
+# biggest_earner: the destination node of the edge with the highest weight. The destination
+# zipcode for the biggest transaction.
+
+def create_summary(G):
+    out_degrees = G.out_degree()
+    in_degrees = G.in_degree()
+    eigenvector = nx.eigenvector_centrality_numpy(G)
+    
+    most_central, _ = get_biggest(eigenvector)
+    biggest_traveler, _ = get_biggest(out_degrees)
+    biggest_receiver, _ = get_biggest(in_degrees)
+    
+    biggest_weight = 0
+    biggest_expender = ''
+    biggest_earner = ''
+    for edge in G.edges():
+        if biggest_weight < G.edge[edge[0]][edge[1]]['weight']:
+            biggest_weight = G.edge[edge[0]][edge[1]]['weight']
+            biggest_expender = edge[0]
+            biggest_earner = edge[1]
+            
+    summary = {}
+    summary['most_central'] = most_central
+    summary['biggest_traveler'] = biggest_traveler
+    summary['biggest_receiver'] = biggest_receiver
+    summary['biggest_expender'] = biggest_expender
+    summary['biggest_earner'] = biggest_earner
+            
+    return summary
+        
+    
+    
+    
+def get_biggest(d):
+    biggest_value = 0
+    biggest = ''
+    for pair in d.items():
+        if biggest_value < pair[1]:
+            biggest_value = pair[1]
+            biggest = pair[0]
+            
+    return biggest, biggest_value
     
 def analyze_graph(G):    
     
@@ -147,18 +204,41 @@ def analyze_graph(G):
         G.node[member]['community'] = c   
     
     return G
+    
+def create_complete_summary():
+    summary = {}
+    print 'Getting total summary'
+    G = get_total_relations() 
+    G = update_location_data(G, './data/all_zipcodes.json')
+    export_gexf(G, './data/processed_graph/all-relations-directed.gexf')
+    complete_summary = create_summary(G)
+    summary['complete'] = complete_summary
+    
+    for c in categories:
+        print 'Getting ' + c + ' summary'
+        G = get_relations_by_category('total', c)
+        G = update_location_data(G, './data/all_zipcodes_.json')
+        export_gexf(G, './data/processed_graph/' + c + '-directed.gexf')
+        cat_summary = create_summary(G)
+        summary[c] = cat_summary
+    
+    return summary
+    
+summ = create_complete_summary();
+print summ 
+ 
  
 # ALL RELATIONS   
-G = get_total_relations() 
-G = update_location_data(G, './data/all_zipcodes.json')
-# G = analyze_graph(G)
-export_gexf(G, './data/processed_graph/directed.gexf')  
-
-#BY WEEK AND CATEGORY
-#G = get_relations_by_category('total','es_auto')
+#G = get_total_relations() 
 #G = update_location_data(G, './data/all_zipcodes.json')
 #G = analyze_graph(G)
-#export_gexf(G, './data/processed_graph/directed_es_auto_total.gexf')  
+#export_gexf(G, './data/processed_graph/all-relations.gexf')  
+
+#BY WEEK, CATEGORY AND MINIMUN DISTANCE
+#G = get_relations_by_category('total','es_auto', 99)
+#G = update_location_data(G, './data/all_zipcodes.json')
+##G = analyze_graph(G)
+#export_gexf(G, './data/processed_graph/directed_es_auto_total_100km.gexf')  
 
 ##MAXIMUN DISTANCE
 #G = get_total_relations(99)
