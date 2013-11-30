@@ -118,7 +118,18 @@ def update_location_data(G, path):
             G.node[node]['lon'] = -1.58
         
     return G
-    
+
+# most_central: the node with the highest eigenvector centrality. The 'most important'
+# zipcode in the network
+# biggest_traveler: the node with the biggest outdegree. The zipcode that have has 
+# most transaction in other zipcodes
+# biggest_receiver: the node with the biggest indegree. The zipcode that has received
+# most transactions from other zipcodes
+# biggest_expender: the origin node of the edge with the highest weight. The originating
+# zipcode for the biggest transaction.
+# biggest_earner: the destination node of the edge with the highest weight. The destination
+# zipcode for the biggest transaction.
+
 def create_summary(G):
     out_degrees = G.out_degree()
     in_degrees = G.in_degree()
@@ -132,12 +143,19 @@ def create_summary(G):
     biggest_expender = ''
     biggest_earner = ''
     for edge in G.edges():
-        if biggest_weight < G.edge[edge[0]][edge[1]]['weigth']:
-            biggest_weight = G.edge[edge[0]][edge[1]]['weigth']
+        if biggest_weight < G.edge[edge[0]][edge[1]]['weight']:
+            biggest_weight = G.edge[edge[0]][edge[1]]['weight']
             biggest_expender = edge[0]
             biggest_earner = edge[1]
             
-    return most_central, biggest_traveler, biggest_receiver, biggest_expender, biggest_earner
+    summary = {}
+    summary['most_central'] = most_central
+    summary['biggest_traveler'] = biggest_traveler
+    summary['biggest_receiver'] = biggest_receiver
+    summary['biggest_expender'] = biggest_expender
+    summary['biggest_earner'] = biggest_earner
+            
+    return summary
         
     
     
@@ -186,12 +204,35 @@ def analyze_graph(G):
         G.node[member]['community'] = c   
     
     return G
+    
+def create_complete_summary():
+    summary = {}
+    print 'Getting total summary'
+    G = get_total_relations() 
+    G = update_location_data(G, './data/all_zipcodes.json')
+    export_gexf(G, './data/processed_graph/all-relations-directed.gexf')
+    complete_summary = create_summary(G)
+    summary['complete'] = complete_summary
+    
+    for c in categories:
+        print 'Getting ' + c + ' summary'
+        G = get_relations_by_category('total', c)
+        G = update_location_data(G, './data/all_zipcodes_.json')
+        export_gexf(G, './data/processed_graph/' + c + '-directed.gexf')
+        cat_summary = create_summary(G)
+        summary[c] = cat_summary
+    
+    return summary
+    
+summ = create_complete_summary();
+print summ 
+ 
  
 # ALL RELATIONS   
-G = get_total_relations() 
-G = update_location_data(G, './data/all_zipcodes.json')
+#G = get_total_relations() 
+#G = update_location_data(G, './data/all_zipcodes.json')
 #G = analyze_graph(G)
-export_gexf(G, './data/processed_graph/all-relations.gexf')  
+#export_gexf(G, './data/processed_graph/all-relations.gexf')  
 
 #BY WEEK, CATEGORY AND MINIMUN DISTANCE
 #G = get_relations_by_category('total','es_auto', 99)
