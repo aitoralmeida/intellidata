@@ -3,7 +3,7 @@ import json
 from flask import Blueprint, render_template, url_for
 
 from intellidata import mongo
-from .geotools import generate_zipcodes_map
+from .geotools import generate_zipcodes_map, Algorithms
 from .util import get_week_borders
 
 basic_blueprint = Blueprint('basic', __name__)
@@ -85,10 +85,29 @@ def zipcode_summary(zipcode):
 
 @basic_blueprint.route('/zipcodes/<zipcode>/map/')
 def zipcode_map(zipcode):
-    return render_template("basic/map.html", zipcode = zipcode)
+    fields = { 'incomes' : 'Incomes', 'numcards' : 'Cards', 'numpay' : 'Payments' }
+    return render_template("basic/map.html", zipcode = zipcode, algorithm = Algorithms.DEFAULT, algorithms = Algorithms.ALGORITHMS, field = 'incomes', fields = fields)
 
-@basic_blueprint.route('/zipcodes/<zipcode>/map/filepath/')
-def zipcode_map_file(zipcode):
+@basic_blueprint.route('/zipcodes/<zipcode>/map/<algorithm>/<field>/')
+def zipcode_map_algorithm(zipcode, algorithm, field):
+    if algorithm not in Algorithms.ALGORITHMS:
+        return "Invalid algorithm"
+    fields = { 'incomes' : 'Incomes', 'numcards' : 'Cards', 'numpay' : 'Payments' }
+    if field not in fields:
+        return "Invalid field"
+
+    return render_template("basic/map.html", zipcode = zipcode, algorithm = algorithm, algorithms = Algorithms.ALGORITHMS, field = field, fields = fields)
+
+
+@basic_blueprint.route('/zipcodes/<zipcode>/map/filepath/<algorithm>/<field>/')
+def zipcode_map_file(zipcode, algorithm, field):
+    if algorithm not in Algorithms.ALGORITHMS:
+        return "Invalid algorithm"
+
+    fields = { 'incomes' : 'Incomes', 'numcards' : 'Cards', 'numpay' : 'Payments' }
+    if field not in fields:
+        return "Invalid field"
+
     zipcode_data = next(mongo.db.top_clients_summary.find({ '_id' : zipcode }), None)
     data = {}
 
@@ -99,7 +118,7 @@ def zipcode_map_file(zipcode):
             numpay       = "%i" % zdata['per_week']['total']['total']['num_payments']
         )
 
-    svg_file_path = generate_zipcodes_map(data, zipcode, 'total', 'incomes')
+    svg_file_path = generate_zipcodes_map(data, zipcode, 'total', field, algorithm)
     svg_file_path = 'geo/' + svg_file_path.split('/')[-1]
     return json.dumps({ 'url' : url_for('static', filename = svg_file_path) })
 
