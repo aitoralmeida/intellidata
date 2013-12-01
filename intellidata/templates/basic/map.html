@@ -6,7 +6,7 @@
     {% from "_widgets.html" import map %}
 
     <div class="container text-center">
-        {{ map("0", url_for('.zipcode_map_file', zipcode = zipcode, algorithm = algorithm, field = field), url_for('.zipcode_map_file', zipcode = zipcode, algorithm = '***ALGORITHM***', field = '***FIELD***'), zipcode, algorithm, algorithms, field, fields) }}
+        {{ map("0", url_for('.zipcode_map_file', zipcode = zipcode, algorithm = algorithm, field = field), url_for('.zipcode_map_algorithm', zipcode = zipcode, algorithm = 'ALGORITHM', field = 'FIELD'), zipcode, algorithm, algorithms, field, fields) }}
     </div>
 
 {% endblock %}

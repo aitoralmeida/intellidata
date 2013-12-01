@@ -114,8 +114,8 @@ def zipcode_map_file(zipcode, algorithm, field):
     for zcode, zdata in zipcode_data['value']['home_zipcodes'].iteritems():
         data[zcode] = dict(
             incomes      = zdata['per_week']['total']['total']['incomes'],
-            numcards     = "%i" % zdata['per_week']['total']['total']['num_cards'],
-            numpay       = "%i" % zdata['per_week']['total']['total']['num_payments']
+            numcards     = int(zdata['per_week']['total']['total']['num_cards']),
+            numpay       = int(zdata['per_week']['total']['total']['num_payments'])
         )
 
     svg_file_path = generate_zipcodes_map(data, zipcode, 'total', field, algorithm)

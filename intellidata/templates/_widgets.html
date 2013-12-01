@@ -71,11 +71,11 @@
         <div id="map_{{ id }}"></div>
         <div>
         {% for cur_algorithm in algorithms %}
-            <a class="btn {% if cur_algorithm == algorithm %}btn-default{% else %}btn-success{% endif %}" href="{{ url_template.replace('***ALGORITHM***', cur_algorithm).replace('***FIELD***', field) }}">{{ algorithms[cur_algorithm] }}</a>
+            <a class="btn {% if cur_algorithm == algorithm %}btn-default{% else %}btn-success{% endif %}" href="{{ url_template.replace('ALGORITHM', cur_algorithm).replace('FIELD', field) }}">{{ algorithms[cur_algorithm] }}</a>
         {% endfor %}
         <br/><br/>
         {% for cur_field in fields %}
-            <a class="btn {% if cur_field == field %}btn-default{% else %}btn-info{% endif %}" href="{{ url_template.replace('***ALGORITHM***', algorithm).replace('***FIELD***', field) }}">{{ fields[cur_field] }}</a>
+            <a class="btn {% if cur_field == field %}btn-default{% else %}btn-info{% endif %}" href="{{ url_template.replace('ALGORITHM', algorithm).replace('FIELD', cur_field) }}">{{ fields[cur_field] }}</a>
         {% endfor %}
         </div>
 

@@ -82,7 +82,7 @@ def generate_zipcodes_map(data, zipcode, identifier, key_field, algorithm):
     kartograph_settings["proj"] = { "id": "sinusoidal", "lon0": 20 }
     kartograph_settings["layers"] = OrderedDict()
     kartograph_settings["layers"]["background"] = {"special": "sea"}
-    kartograph_settings["layers"][ "graticule"] = { "special": "graticule", 
+    kartograph_settings["layers"]["graticule"] = { "special": "graticule", 
             "latitudes": 1, 
             "longitudes": 1, 
             "styles": { "stroke-width": "0.3px" } 
@@ -131,6 +131,7 @@ def obtain_shp_file(data, zipcode, identifier, key_field, data_hash, algorithm):
         for field in zdata:
             all_fields.add(field.title())
         max_value = max(max_value, zdata[key_field])
+        print repr(max_value)
         all_key_values.append(zdata[key_field])
 
         coordinates = obtain_kml_coordinates(zcode)
