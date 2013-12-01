@@ -24,7 +24,9 @@
         <script src="{{ url_for('static', filename='js/kartograph.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/chroma.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/jquery.qtip.js') }}"></script>
+        <script src="{{ url_for('static', filename='pan-zoom/raphael.pan-zoom.min.js') }}"></script>
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='js/jquery.qtip.css') }}"/>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='pan-zoom/raphael.pan-zoom.css') }}"/>
 
  <script language="JavaScript"> 
 var map;
@@ -34,7 +36,6 @@ map = Kartograph.map('#map', 600, 0);
 
  
 map.loadMap(url, function(mymap) {
-    console.log(mymap);
 
   map.loadCSS('{{ url_for('static', filename='geo/maps.css') }}', function() {
     map.addLayer('background');
@@ -50,7 +51,10 @@ map.loadMap(url, function(mymap) {
     map.getLayer('zipcodes').tooltips(function(data) {
         return [data.zipcode, '<b>' + data.zcode + '</b><br/>Incomes: <b>' + data.incomes + '</b><br/>Cards: <b>'+ data.numcards + '</b><br/>Payments: <b>'+ data.numpay + '</b><br/>Position: <b>' + data.position + '</b>'];
     });
-    
+
+    var panZoom = map.paper.panzoom({ initialZoom: 6, initialPosition: { x: 120, y: 70} });
+    panZoom.enable();
+
     $("#processing_message_alert").hide();
 
     });
