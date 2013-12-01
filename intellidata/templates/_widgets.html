@@ -108,6 +108,7 @@ map.loadMap(url, function(mymap) {
     map.addLayer('depth');
     map.addLayer('trees');
     map.addLayer('crops');
+    map.addLayer('provinces');
     map.addLayer('zipcodes');
 
     setColors();
@@ -141,6 +142,10 @@ function setColors(){
         return bgColor;
     });
     map.getLayer('world').style('fill', function(data) {
+        return "#f5f3f2";
+    });
+
+    map.getLayer('provinces').style('fill', function(data) {
         return "#f5f3f2";
     });
     map.getLayer('background').style('fill', function(data) {

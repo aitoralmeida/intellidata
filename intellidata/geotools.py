@@ -88,11 +88,14 @@ def generate_zipcodes_map(data, zipcode, identifier, key_field, algorithm):
             "styles": { "stroke-width": "0.3px" } 
        }
     kartograph_settings["layers"]["world"] = {
-            "src": "data/geo/ne_10m_admin_0_countries.shp"
-        }
-    kartograph_settings["layers"]["provinces"] = {
             "src": "data/geo/ne_50m_admin_0_countries.shp"
         }
+    kartograph_settings["layers"]["provinces"] = {
+        "src" : "data/geo/provincias.shp"
+    }
+#    kartograph_settings["layers"]["world"] = {
+#            "src": "data/geo/ne_10m_admin_0_countries.shp"
+#        }
     kartograph_settings["layers"]["zipcodes"] = {
            "src": shp_file_path,
            "attributes": attributes
@@ -221,8 +224,7 @@ def obtain_kml_coordinates(zipcode):
         return None
 
     # Convert the KML file into a SHP file
-    open(kml_file).read()
-    root = ET.fromstring(open("intellidata/static/kml/%s.kml" % zipcode).read())
+    root = ET.fromstring(open(kml_file).read())
     coordinates = root.findall(".//{http://www.opengis.net/kml/2.2}coordinates")[0].text.splitlines()
 
     final_coordinates = []
