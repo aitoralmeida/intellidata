@@ -65,6 +65,13 @@ function setColors(){
         var bgColor = scale(data.position / 256.0).hex(); // #FF7F7F
         return bgColor;
     });
+    map.getLayer('world').style('fill', function(data) {
+        return "#f5f3f2";
+    });
+    map.getLayer('background').style('fill', function(data) {
+        return "#e8f9fb";
+    });
+
 }
 
 $(document).ready(function() {

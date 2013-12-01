@@ -5,6 +5,8 @@ import StringIO
 import hashlib
 import shapefile
 import xml.etree.ElementTree as ET
+from collections import OrderedDict
+
 from kartograph import Kartograph
 from kartograph.options import read_map_config
 
@@ -45,6 +47,7 @@ def generate_zipcodes_map(data, zipcode, identifier, key_field):
     data_hash = hashlib.new("md5", repr(data)).hexdigest()
 
     svg_file = 'intellidata/static/geo/%s_%s_%s_%s.svg' % (zipcode, identifier, key_field, data_hash)
+    json_svg_file = 'intellidata/static/geo/%s_%s_%s_%s.svg.json' % (zipcode, identifier, key_field, data_hash)
 
     if CACHE_MAP and os.path.exists(svg_file):
         return svg_file
@@ -63,39 +66,35 @@ def generate_zipcodes_map(data, zipcode, identifier, key_field):
     for sorted_field in sorted_fields:
         attributes[sorted_field.title()] = sorted_field.title()
 
-    kartograph_settings = {
-    "proj": {
-            "id": "sinusoidal",
-            "lon0": 20
-      },
-       "layers": {
-       "background": {"special": "sea"},
-       "graticule":{ 
-            "special": "graticule", 
+    kartograph_settings = OrderedDict()
+    kartograph_settings["proj"] = { "id": "sinusoidal", "lon0": 20 }
+    kartograph_settings["layers"] = OrderedDict()
+    kartograph_settings["layers"]["background"] = {"special": "sea"}
+    kartograph_settings["layers"][ "graticule"] = { "special": "graticule", 
             "latitudes": 1, 
             "longitudes": 1, 
             "styles": { "stroke-width": "0.3px" } 
-       },
-       "world":{
+       }
+    kartograph_settings["layers"]["world"] = {
+            "src": "data/geo/ne_10m_admin_0_countries.shp"
+        }
+    kartograph_settings["layers"]["provinces"] = {
             "src": "data/geo/ne_50m_admin_0_countries.shp"
-        },
-       "zipcodes":{
+        }
+    kartograph_settings["layers"]["zipcodes"] = {
            "src": shp_file_path,
            "attributes": attributes
        }
-       },
-      "bounds": {
+    kartograph_settings["bounds"] = {
         "mode": "bbox",
-        "data": [-10, 36, 5, 44],
-        "crop": [-12, 34, 7, 46]
+        "data": [-10, 35, 5, 45],
+        "crop": [-12, 33, 7, 47]
       }
-    }
 
-    kartograph_settings_sio = StringIO.StringIO(json.dumps(kartograph_settings))
-    kartograph_settings_sio.name = svg_file + '.json'
+    open(json_svg_file, 'w').write(json.dumps(kartograph_settings, indent = 4))
     K = Kartograph()
     css = open("intellidata/static/geo/maps.css").read()
-    cfg = read_map_config(kartograph_settings_sio)
+    cfg = read_map_config(open(json_svg_file))
     K.generate(cfg, outfile=svg_file, format='svg', stylesheet=css)
     return svg_file
 
