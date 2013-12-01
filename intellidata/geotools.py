@@ -14,7 +14,7 @@ from kartograph.options import read_map_config
 # TODO: Put to True
 USE_CACHE = True
 CACHE_KML = USE_CACHE and True
-CACHE_SHP = CACHE_KML  and False
+CACHE_SHP = CACHE_KML  and True
 CACHE_MAP = CACHE_SHP  and True
 
 class Algorithms:
@@ -88,7 +88,7 @@ def generate_zipcodes_map(data, zipcode, identifier, key_field, algorithm):
             "styles": { "stroke-width": "0.3px" } 
        }
     kartograph_settings["layers"]["world"] = {
-            "src": "data/geo/ne_50m_admin_0_countries.shp"
+            "src": "data/geo/ne_10m_admin_0_countries_cropped.shp"
         }
     kartograph_settings["layers"]["provinces"] = {
         "src" : "data/geo/provincias.shp"
