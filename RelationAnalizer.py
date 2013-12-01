@@ -7,9 +7,11 @@ Created on Wed Nov 13 09:14:17 2013
 
 import networkx as nx
 from networkx.readwrite import gexf
+from networkx.readwrite import json_graph
 import json
 from networkx.algorithms import bipartite
 import community
+import json
 
 from bbvalib import create_mongoclient
 from geo_tools import haversine
@@ -31,6 +33,24 @@ def show_info(G):
     
 def export_gexf(G, path):
     gexf.write_gexf(G, path)    
+
+def export_json(G, path):
+    jsonString= json_graph.dumps(G)
+    jsonData = json.loads(jsonString)
+    nodes = jsonData['nodes']
+    print nodes
+    links = jsonData['links']
+    
+    res = {}
+    res['nodes'] = nodes
+    res['links'] = links
+    jsonString = json.dumps(res)
+    jsonString = jsonString.replace('id', 'name')
+    jsonString = jsonString.replace('weight', 'value')
+    print jsonString
+    with open(path, 'w') as f:
+     f.write(jsonString)
+     f.flush()
 
 #def get_total_relations():    
 #    G = nx.DiGraph()
@@ -205,6 +225,12 @@ def analyze_graph(G):
     
     return G
     
+def get_groups(G):
+    partitions = community.best_partition(G.to_undirected())
+    for member, c in partitions.items():
+        G.node[member]['group'] = c
+    return G
+    
 def create_complete_summary():
     summary = {}
     print 'Getting total summary'
@@ -223,9 +249,11 @@ def create_complete_summary():
         summary[c] = cat_summary
     
     return summary
-    
-summ = create_complete_summary();
-print summ 
+
+
+# CREATE SUMMARY  
+#summ = create_complete_summary();
+#print summ 
  
  
 # ALL RELATIONS   
@@ -241,9 +269,13 @@ print summ
 #export_gexf(G, './data/processed_graph/directed_es_auto_total_100km.gexf')  
 
 ##MAXIMUN DISTANCE
-#G = get_total_relations(99)
-#G = update_location_data(G, './data/all_zipcodes.json')
-#export_gexf(G, './data/processed_graph/directed_es_100km.gexf') 
+#G = get_total_relations(1000)
+
+#JSON
+print 'starting'
+G = get_relations_by_category('total','es_auto', 10)
+G = get_groups(G)
+export_json(G, './sketches/aitor/300km.json') 
 
    
 print 'fin' 
