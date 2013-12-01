@@ -11,7 +11,6 @@ from networkx.readwrite import json_graph
 import json
 from networkx.algorithms import bipartite
 import community
-import json
 
 from bbvalib import create_mongoclient
 from geo_tools import haversine
@@ -38,7 +37,6 @@ def export_json(G, path):
     jsonString= json_graph.dumps(G)
     jsonData = json.loads(jsonString)
     nodes = jsonData['nodes']
-    print nodes
     links = jsonData['links']
     
     res = {}
@@ -47,7 +45,6 @@ def export_json(G, path):
     jsonString = json.dumps(res)
     jsonString = jsonString.replace('id', 'name')
     jsonString = jsonString.replace('weight', 'value')
-    print jsonString
     with open(path, 'w') as f:
      f.write(jsonString)
      f.flush()
@@ -108,18 +105,21 @@ def get_relations_by_category(week, category, min_km = -1):
         home_info = transaction['value']['home_zipcodes']    
         for key in home_info.keys():
             home_zipcode = key
-            incomes = home_info[key]['per_week'][week][category]['incomes']
-            if incomes > 0:
-                home_lat, home_lon = get_lon_lat(home_zipcode)
-                shop_lat, shop_lon = get_lon_lat(shop_zipcode)
-                distance = haversine(home_lon, home_lat, shop_lon, shop_lat)
-                if distance > min_km:
-                    num_payments= home_info[key]['per_week'][week][category]['num_payments']
-                    G.add_edge( home_zipcode, 
-                               shop_zipcode, 
-                               weight=incomes, 
-                               incomes=incomes, 
-                               num_payments=num_payments)
+            try:
+                incomes = home_info[key]['per_week'][week][category]['incomes']
+                if incomes > 0:
+                    home_lat, home_lon = get_lon_lat(home_zipcode)
+                    shop_lat, shop_lon = get_lon_lat(shop_zipcode)
+                    distance = haversine(home_lon, home_lat, shop_lon, shop_lat)
+                    if distance > min_km:
+                        num_payments= home_info[key]['per_week'][week][category]['num_payments']
+                        G.add_edge( home_zipcode, 
+                                   shop_zipcode, 
+                                   weight=incomes, 
+                                   incomes=incomes, 
+                                   num_payments=num_payments)
+            except KeyError:
+                print 'No such category: ' + category
                            
     show_info(G)
     return G
@@ -151,29 +151,39 @@ def update_location_data(G, path):
 # zipcode for the biggest transaction.
 
 def create_summary(G):
-    out_degrees = G.out_degree()
-    in_degrees = G.in_degree()
-    eigenvector = nx.eigenvector_centrality_numpy(G)
-    
-    most_central, _ = get_biggest(eigenvector)
-    biggest_traveler, _ = get_biggest(out_degrees)
-    biggest_receiver, _ = get_biggest(in_degrees)
-    
-    biggest_weight = 0
-    biggest_expender = ''
-    biggest_earner = ''
-    for edge in G.edges():
-        if biggest_weight < G.edge[edge[0]][edge[1]]['weight']:
-            biggest_weight = G.edge[edge[0]][edge[1]]['weight']
-            biggest_expender = edge[0]
-            biggest_earner = edge[1]
-            
     summary = {}
-    summary['most_central'] = most_central
-    summary['biggest_traveler'] = biggest_traveler
-    summary['biggest_receiver'] = biggest_receiver
-    summary['biggest_expender'] = biggest_expender
-    summary['biggest_earner'] = biggest_earner
+    
+    if len(G.nodes()) > 0:
+        out_degrees = G.out_degree()
+        in_degrees = G.in_degree()
+        eigenvector = nx.eigenvector_centrality_numpy(G)
+        
+        most_central, _ = get_biggest(eigenvector)
+        biggest_traveler, _ = get_biggest(out_degrees)
+        biggest_receiver, _ = get_biggest(in_degrees)
+        
+        biggest_weight = 0
+        biggest_expender = ''
+        biggest_earner = ''
+        for edge in G.edges():
+            if biggest_weight < G.edge[edge[0]][edge[1]]['weight']:
+                biggest_weight = G.edge[edge[0]][edge[1]]['weight']
+                biggest_expender = edge[0]
+                biggest_earner = edge[1]
+                
+        
+        summary['most_central'] = most_central
+        summary['biggest_traveler'] = biggest_traveler
+        summary['biggest_receiver'] = biggest_receiver
+        summary['biggest_expender'] = biggest_expender
+        summary['biggest_earner'] = biggest_earner
+    
+    else:
+        summary['most_central'] = 'none'
+        summary['biggest_traveler'] = 'none'
+        summary['biggest_receiver'] = 'none'
+        summary['biggest_expender'] = 'none'
+        summary['biggest_earner'] = 'none'
             
     return summary
         
@@ -191,7 +201,6 @@ def get_biggest(d):
     return biggest, biggest_value
     
 def analyze_graph(G):    
-    
     #centralities and node metrics
     out_degrees = G.out_degree()
     in_degrees = G.in_degree()
@@ -226,9 +235,12 @@ def analyze_graph(G):
     return G
     
 def get_groups(G):
-    partitions = community.best_partition(G.to_undirected())
-    for member, c in partitions.items():
-        G.node[member]['group'] = c
+    if len(G.nodes()) > 0:
+        partitions = community.best_partition(G.to_undirected())
+        for member, c in partitions.items():
+            G.node[member]['group'] = c
+    else:
+        print 'Empty graph'
     return G
     
 def create_complete_summary():
@@ -250,6 +262,14 @@ def create_complete_summary():
     
     return summary
 
+def create_matrix_jsons(kms=100):
+    for c in categories:
+        print '**** Processing: ' + c
+        G = get_relations_by_category('total',c, kms)
+        G = get_groups(G)
+        export_json(G, './data/jsons_matrix/' + str(kms) + c + '.json') 
+        
+    
 
 # CREATE SUMMARY  
 #summ = create_complete_summary();
@@ -272,10 +292,18 @@ def create_complete_summary():
 #G = get_total_relations(1000)
 
 #JSON
+#G = get_relations_by_category('total','es_auto', 10)
+#G = get_groups(G)
+#export_json(G, './sketches/aitor/300km.json') 
+
+
 print 'starting'
-G = get_relations_by_category('total','es_auto', 10)
-G = get_groups(G)
-export_json(G, './sketches/aitor/300km.json') 
+create_matrix_jsons(100)
+summary = create_complete_summary()
+summary_json = json.dumps(summary)
+with open('./data/summary.json', 'w') as f:
+     f.write(summary_json)
+     f.flush()
 
    
 print 'fin' 
