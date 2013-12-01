@@ -56,3 +56,120 @@
     <div id="holder_{{ table_id }}"></div>
 
 {% endmacro %}
+
+{% macro map(id, svg_map_file, url_template, zipcode, algorithm, algorithms, field, fields) %}
+        <div class="alert alert-error" id="error_message_{{ id }}">
+            <h1>There was an error accessing data. Check <a href="{{ url_for('.zipcode_map_file', zipcode = zipcode, algorithm = algorithm, field = field) }}">this</a>. </h1>
+        </div>
+        <div class="alert" id="generating_file_message_{{ id }}">
+            <h1>Generating map...</h1>
+        </div>
+        <div class="alert" id="processing_message_alert_{{ id }}">
+            <h1>Processing map...</h1>
+        </div>
+
+        <div id="map_{{ id }}"></div>
+        <div>
+        {% for cur_algorithm in algorithms %}
+            <a class="btn {% if cur_algorithm == algorithm %}btn-default{% else %}btn-success{% endif %}" href="{{ url_template.replace('ALGORITHM', cur_algorithm).replace('FIELD', field) }}">{{ algorithms[cur_algorithm] }}</a>
+        {% endfor %}
+        <br/><br/>
+        {% for cur_field in fields %}
+            <a class="btn {% if cur_field == field %}btn-default{% else %}btn-info{% endif %}" href="{{ url_template.replace('ALGORITHM', algorithm).replace('FIELD', cur_field) }}">{{ fields[cur_field] }}</a>
+        {% endfor %}
+        </div>
+
+{% endmacro %}
+
+{% macro map_scripts() %}
+        <script src="{{ url_for('static', filename='js/jquery-1.8.3.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/raphael-min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/kartograph.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/chroma.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/jquery.qtip.js') }}"></script>
+        <script src="{{ url_for('static', filename='pan-zoom/raphael.pan-zoom.min.js') }}"></script>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='js/jquery.qtip.css') }}"/>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='pan-zoom/raphael.pan-zoom.css') }}"/>
+{% endmacro %}
+
+{% macro map_initializer(id, file_url, fields, size = 600) %}
+  <script language="JavaScript"> 
+var map;
+function loadMap(url){
+
+map = Kartograph.map('#map_{{ id }}', {{ size }}, 0);
+
+ 
+map.loadMap(url, function(mymap) {
+
+  map.loadCSS('{{ url_for('static', filename='geo/maps.css') }}', function() {
+    map.addLayer('background');
+    map.addLayer('world');
+    map.addLayer('depth');
+    map.addLayer('trees');
+    map.addLayer('crops');
+    map.addLayer('provinces');
+    map.addLayer('zipcodes');
+
+    setColors();
+    $.fn.qtip.defaults.style.classes = 'qtip-light';
+
+    map.getLayer('zipcodes').tooltips(function(data) {
+
+        var message = '<b>' + data.zcode + '</b>';
+        {% for field in fields %}
+        message = message + '<br/>{{ fields[field] }}: <b>' + data.{{ field }} + '</b>';        
+        {% endfor %}
+
+        return [data.zipcode, message];
+    });
+
+    var panZoom = map.paper.panzoom();
+    panZoom.enable();
+
+    $("#processing_message_alert_{{ id }}").hide();
+
+    });
+}, { padding: -30 })
+
+}
+
+function setColors(){
+    map.getLayer('zipcodes').style('fill', function(data) {
+
+        scale = chroma.scale(['yellow', 'red']);
+        var bgColor = scale(data.position / 256.0).hex(); // #FF7F7F
+        return bgColor;
+    });
+    map.getLayer('world').style('fill', function(data) {
+        return "#f5f3f2";
+    });
+
+    map.getLayer('provinces').style('fill', function(data) {
+        return "#f5f3f2";
+    });
+    map.getLayer('background').style('fill', function(data) {
+        return "#e8f9fb";
+    });
+
+}
+
+$(document).ready(function() {
+    $("#processing_message_alert_{{ id }}").hide();
+    $("#error_message_{{ id }}").hide();
+    $.get( "{{ file_url }}", function() {})
+        .done(function(data) {
+            $("#generating_file_message_{{ id }}").hide();
+            $("#processing_message_alert_{{ id }}").show();
+            var data = $.parseJSON(data);
+            loadMap(data["url"]);
+        })
+        .fail(function() {
+            $("#generating_file_message_{{ id }}").hide();
+            $("#error_message_{{ id }}").show();
+        });
+});
+</script>
+   
+{% endmacro %}
+
