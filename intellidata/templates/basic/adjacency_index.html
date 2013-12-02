@@ -5,12 +5,15 @@
 
 <div class="container">
     <h1>Adjacency matrix</h1>
+    
+    <p>These adjacency matrix show the relationship between zipcodes located with a particular minimum distance from each other and in a particular category. For example, <a href="{{ url_for('.adjacency_category', category = 'es_auto', kms = 50) }}">50 km Automotive</a> represent which zipcodes buy cars in other zipcodes that are at least 50 kilometers apart. The different clusters are represented with different colors. The transparency of the color represents the number of payments between two zipcodes. The matrix support being sorted by name, cluster or number of payments.</p>
+
     <table class="table table-bordered table-hover">
         <thead>
             <tr>
                 <th>#</th>
                 {% for km in kms %}
-                    <th>{{ km }}</th>
+                    <th>{{ km }} km</th>
                 {% endfor %}
             </tr>
         </thead>
@@ -19,7 +22,7 @@
                 <tr>
                     <td><b>{{ category_names[category] }}</b></td>
                     {% for km in kms %}
-                        <td><a href="{{ url_for('.adjacency_category', category = category, kms = km) }}" class="btn btn-link">{{ km }} {{ category }}</a></td>
+                        <td><a href="{{ url_for('.adjacency_category', category = category, kms = km) }}" class="btn btn-link">{{ km }} km {{ category_names[category] }}</a></td>
                     {% endfor %}
                 </tr>
             {% endfor %}

@@ -4,8 +4,13 @@
 {% block body %}
 
 <div class="container">
+        
+    <h1>Localized information</h1>
+
+    <p>This section contains information analyzed per each zipcode. Select a zipcode to gather more information about it.</p>
+
     <div class="page-header">
-        <h1>Madrid</h1>
+        <h2>Madrid</h2>
     </div>
 
     {% for x in madrid_zipcodes %}
@@ -16,7 +21,7 @@
 
 
      <div class="page-header">
-        <h1>Barcelona</h1>
+        <h2>Barcelona</h2>
     </div>   
     {% for x in barcelona_zipcodes %}
     <div class="col-lg-1">

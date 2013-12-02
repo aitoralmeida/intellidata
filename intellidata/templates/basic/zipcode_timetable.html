@@ -10,7 +10,7 @@
     <ul>
         <li><a href="total">Total</a></li>
         {% for category in categories %}
-        <li><a href="{{ url_for('local.zipcode_timetables_category', zipcode = zipcode, category = category) }}">{{ category }}</a></li>
+        <li><a href="{{ url_for('local.zipcode_timetables_category', zipcode = zipcode, category = category) }}">{{ category_names[category] }}</a></li>
         {% endfor %}
     </ul>
 

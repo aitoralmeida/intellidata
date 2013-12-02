@@ -3,6 +3,14 @@
 {% extends "master.html" %}
 {% block body %}
 
+    <div class="container">
+    <h1>Zipcodes social network</h1>
+
+    <p>The following graph represents the social network constructed using the payments between the zipcodes. The zipcodes have been geolocated to represent an implicit map to make it easier to locate them. There are different colors, representing different communities. These communities have been identified using the louvain method described in <a href="http://dx.doi.org/10.1088/1742-5468/2008/10/P10008">Fast unfolding of communities in large networks</a>, Vincent D Blondel, Jean-Loup Guillaume, Renaud Lambiotte, Renaud Lefebvre, Journal of Statistical Mechanics: Theory and Experiment 2008(10), P10008 (12pp)
+    
+    </p>
+    </div>
+
      <form style="display: none"> 
       <span class="label label-info">Graph:</span> 
       <select id="grafos"> <option value="0">[Select]</option> <optgroup label="Project0"><option value="Workspace0" selected="true">Workspace0</option></optgroup></select> 

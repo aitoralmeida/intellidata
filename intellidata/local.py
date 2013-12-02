@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, url_for, request
 
 from intellidata import mongo
 from .geotools import generate_zipcodes_map, Algorithms
-from .util import get_week_borders, generate_color_code, generate_timetable, FIELDS, WEEKS, MONTHS, CATEGORIES, KMS
+from .util import get_week_borders, generate_color_code, generate_timetable, FIELDS, WEEKS, MONTHS, CATEGORIES, KMS, CATEGORY_NAMES
 
 local_blueprint = Blueprint('local', __name__)
 
@@ -190,7 +190,7 @@ def zipcode_timetables(zipcode):
     total_timetables = generate_timetable(days_data)
 
     categories = zipcode_data['value']['categories'].keys()
-    return render_template("basic/zipcode_timetable.html", total_timetables = total_timetables, categories = categories, zipcode = zipcode)
+    return render_template("basic/zipcode_timetable.html", total_timetables = total_timetables, categories = categories, zipcode = zipcode, category_names = CATEGORY_NAMES)
 
 @local_blueprint.route('/zipcodes/<zipcode>/timetables/<category>/')
 def zipcode_timetables_category(zipcode, category):
@@ -204,7 +204,7 @@ def zipcode_timetables_category(zipcode, category):
     category_data = zipcode_data['value']['categories'][category]
     category_timetable = generate_timetable(category_data['total']['days'])
 
-    return render_template("basic/zipcode_timetable_category.html", category_name = category.title(), category_timetable = category_timetable)
+    return render_template("basic/zipcode_timetable_category.html", category = category, category_timetable = category_timetable, category_names = CATEGORY_NAMES)
 
 @local_blueprint.route("/zipcodes/<zipcode>/top_clients/")
 def zipcode_top_clients(zipcode):
