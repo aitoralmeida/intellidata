@@ -17,7 +17,7 @@
         <tbody>
             {% for category in categories %}
                 <tr>
-                    <td><b>{{ category }}</b></td>
+                    <td><b>{{ category_names[category] }}</b></td>
                     {% for km in kms %}
                         <td><a href="{{ url_for('.adjacency_category', category = category, kms = km) }}" class="btn btn-link">{{ km }} {{ category }}</a></td>
                     {% endfor %}

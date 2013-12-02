@@ -1,3 +1,4 @@
+import os
 import json
 from flask import Blueprint, render_template, url_for, request
 from .util import get_week_borders, generate_color_code, generate_timetable, FIELDS, WEEKS, MONTHS, CATEGORIES, KMS, CATEGORY_NAMES
@@ -15,6 +16,14 @@ SUMMARY_WEEKS_CATEGORIES = None
 
 def _get_weeks():
     global SUMMARY_WEEKS, SUMMARY_WEEKS_CATEGORIES
+
+    CACHE_FNAME = 'data/cache.json'
+    if os.path.exists(CACHE_FNAME):
+        try:
+            SUMMARY_WEEKS, SUMMARY_WEEKS_CATEGORIES = json.load(open(CACHE_FNAME))
+            return SUMMARY_WEEKS, SUMMARY_WEEKS_CATEGORIES
+        except:
+            pass
 
     if SUMMARY_WEEKS is None:
         weeks = {
@@ -62,6 +71,8 @@ def _get_weeks():
     else:
         weeks = SUMMARY_WEEKS
         category_weeks = SUMMARY_WEEKS_CATEGORIES
+
+    json.dump((weeks, category_weeks), open(CACHE_FNAME, 'w'), indent = 4)
 
     return weeks, category_weeks
 
@@ -127,7 +138,7 @@ def summary_timeline():
 
 @global_blueprint.route('/adjacency/')
 def adjacency():
-    return render_template("basic/adjacency_index.html", kms = KMS, categories = CATEGORIES)
+    return render_template("basic/adjacency_index.html", kms = KMS, categories = CATEGORIES, category_names = CATEGORY_NAMES)
 
 @global_blueprint.route('/adjacency/<category>/<int:kms>/')
 def adjacency_category(category, kms):
@@ -140,7 +151,7 @@ def adjacency_category(category, kms):
     fname = 'matrix/%s%s.json' % (kms, category)
     size = len(json.load(open('intellidata/static/' + fname))['nodes']) * 13.5
 
-    return render_template("basic/adjacency.html", json_filename = url_for('static', filename = fname), kms = kms, category = category, width = size, height = size)
+    return render_template("basic/adjacency.html", json_filename = url_for('static', filename = fname), kms = kms, category = category, width = size, height = size, category_names = CATEGORY_NAMES)
 
 @global_blueprint.route('/geodataviz/')
 def geodataviz():
