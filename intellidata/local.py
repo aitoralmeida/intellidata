@@ -10,6 +10,17 @@ from .util import get_week_borders, generate_color_code, generate_timetable, FIE
 
 local_blueprint = Blueprint('local', __name__)
 
+AGES = {
+    '0' : '0-18',
+    '1' : '19-25',
+    '2' : '26-35',
+    '3' : '36-45',
+    '4' : '46-55',
+    '5' : '56-65',
+    '6' : '66+',
+    'U' : 'unknown',
+}
+
 @local_blueprint.route('/zipcodes/')
 def zipcodes():
     madrid_zipcodes    = []
@@ -52,27 +63,40 @@ def _zipcode_map_algorithm_impl(zipcode, algorithm, field, link, week = None, mo
     if error:
         return error
 
-    incomes  = map(itemgetter('incomes'), data.values())
-    numpay   = map(itemgetter('numpay'), data.values())
-    numcards = map(itemgetter('numcards'), data.values())
+    incomes  = [ (k, v['incomes']) for k, v in data.items() ]
+    numpay   = [ (k, v['numpay']) for k, v in data.items() ]
+    numcards = [ (k, v['numcards']) for k, v in data.items() ]
+    avg      = [ (k, v['incomes'] / (v['numpay'] if v['numpay'] > 0 else 1)) for k, v in data.items() ]
 
-    MAX_TOP = 5
+    DEFAULT_TOP = 5
+    MAX_TOP = 100
+    try:
+        top_number = int(request.args.get('top', DEFAULT_TOP))
+    except:
+        top_number = DEFAULT_TOP
 
-    top_incomes = zip(range(MAX_TOP), sorted(zip(data.keys(), incomes), lambda (k1, v1), (k2,v2) : cmp(v2, v1))[:MAX_TOP])
-    top_pays    = zip(range(MAX_TOP), sorted(zip(data.keys(), numpay), lambda (k1, v1), (k2,v2) : cmp(v2, v1))[:MAX_TOP])
+    if top_number > MAX_TOP:
+        top_number = MAX_TOP
 
-    field_data = sorted(map(itemgetter(field), data.values()))
-    # So as to create the timeline, we need to show:
-    # axis X: each value
-    # axis Y: aggregated value
-    # TODO
+    top_incomes = zip(range(top_number), sorted(incomes, lambda (k1, v1), (k2,v2) : cmp(v2, v1))[:top_number])
+    top_pays    = zip(range(top_number), sorted(numpay, lambda (k1, v1), (k2,v2) : cmp(v2, v1))[:top_number])
+    top_avg     = zip(range(top_number), sorted(avg, lambda (k1, v1), (k2,v2) : cmp(v2, v1))[:top_number])
+
+    all_field_data = sorted([ (k, v[field]) for k, v in data.items() ], lambda (k1, v1), (k2, v2) : cmp(v1, v2))
+
+    def second_elements(elements):
+        return dict(elements).values()
 
     summary = {
-        'incomes.total' : sum(incomes),
-        'numpay.total' : sum(numpay),
-        'numcards.total' : sum(numcards),
-        'timeline_headers' : range(len(field_data)),
-        'timeline_values'  : field_data,
+        'top_incomes' : top_incomes,
+        'top_pays' : top_pays,
+        'top_avg'  : top_avg,
+        'incomes.total' : sum(second_elements(incomes)),
+        'numpay.total' : sum(second_elements(numpay)),
+        'numcards.total' : sum(second_elements(numcards)),
+        'avg.total' : sum(second_elements(avg)),
+        'timeline_headers' : map(itemgetter(0), all_field_data),
+        'timeline_values'  : map(itemgetter(1), all_field_data),
     }
 
     if week is not None:
@@ -89,17 +113,8 @@ def _zipcode_map_algorithm_impl(zipcode, algorithm, field, link, week = None, mo
     # Obtain demography data
     # 
     zipcode_data = next(mongo.db.shop_zipcode_summary.find({ '_id' : zipcode }), None)
-    AGES = {
-        '0' : '0-18',
-        '1' : '19-25',
-        '2' : '26-35',
-        '3' : '36-45',
-        '4' : '46-55',
-        '5' : '56-65',
-        '6' : '66+',
-        'U' : 'unknown',
-    }
-
+    cubes = {}
+    cubes_totals = {}
     if zipcode_data is None:
         demography = False
     else:
@@ -146,6 +161,13 @@ def _zipcode_map_algorithm_impl(zipcode, algorithm, field, link, week = None, mo
             for gender in cubes:
                 for age in cubes[gender]:
                     cubes[gender][age] = 100.0 * cubes[gender][age] / total
+            cubes_totals = {}
+            cubes_totals['male'] = sum(cubes['male'].values())
+            cubes_totals['female'] = sum(cubes['female'].values())
+            cubes_totals['enterprise'] = sum(cubes['enterprise'].values())
+            cubes_totals['unknown'] = sum(cubes['unknown'].values())
+            for age in cubes['male']:
+                cubes_totals[age] = cubes['male'][age] + cubes['female'][age] + cubes['enterprise'].get(age, 0)
     
     # 
     # Show navigation
@@ -163,7 +185,7 @@ def _zipcode_map_algorithm_impl(zipcode, algorithm, field, link, week = None, mo
         month_number = int(month_id[-2:])
         months[month_id] = '%s/%s' % (month_number, year)
 
-    return render_template("basic/map.html", zipcode = zipcode, algorithm = algorithm, algorithms = Algorithms.ALGORITHMS, field = field, fields = FIELDS, months = months, weeks = weeks, week = week, month = month, link_template = link, file_link_path = file_link_path, summary = summary, top_pays = top_pays, top_incomes = top_incomes, demography = demography, cubes = cubes, ages = AGES)
+    return render_template("basic/map.html", zipcode = zipcode, algorithm = algorithm, algorithms = Algorithms.ALGORITHMS, field = field, fields = FIELDS, months = months, weeks = weeks, week = week, month = month, link_template = link, file_link_path = file_link_path, summary = summary, demography = demography, cubes = cubes, cubes_totals = cubes_totals, ages = AGES)
 
 
 @local_blueprint.route('/zipcodes/<zipcode>/map/filepath/<algorithm>/<field>/')

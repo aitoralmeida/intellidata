@@ -12,7 +12,7 @@
         </div>
 
         <div class="row">
-            <div class="col-lg-3 col-lg-offset-2">
+            <div class="col-lg-3">
                 <table class="table table-border table-hover">
                     <thead>
                         <tr>
@@ -46,15 +46,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for pos, (zipcode, value) in top_incomes %}
+                        {% for pos, (zipcode, value) in summary['top_incomes'] %}
                         <tr>
                             <td><b>{{ pos + 1 }}</b></td>
-                            <td>{{ zipcode }}</td>
+                            <td><a href="{{ url_for('.zipcode_summary', zipcode = zipcode) }}">{{ zipcode }}</a></td>
                             <td>{{ value }} €</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>               
+                <a class="btn btn-primary" href="{{ request.path }}?top={{ summary['top_pays']|length + 5 }}">More</a>
             </div>
             <div class="col-lg-3">
                  <table class="table table-border table-hover">
@@ -66,15 +67,37 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {%  for pos, (zipcode, value) in top_pays %}
+                        {%  for pos, (zipcode, value) in summary['top_pays'] %}
                         <tr>
                             <td><b>{{ pos + 1 }}</b></td>
-                            <td>{{ zipcode }}</td>
+                            <td><a href="{{ url_for('.zipcode_summary', zipcode = zipcode) }}">{{ zipcode }}</a></td>
                             <td>{{ value }} payments</td>
                         </tr>
                         {% endfor %}
                     </tbody>
-                </table>             
+                </table>
+                <a class="btn btn-primary" href="{{ request.path }}?top={{ summary['top_pays']|length + 5 }}">More</a>
+            </div>
+            <div class="col-lg-3">
+                 <table class="table table-border table-hover">
+                    <thead>
+                        <tr>
+                            <th class="text-center">#</th>
+                            <th class="text-center">Top zipcodes</th>
+                            <th class="text-center">Average</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {%  for pos, (zipcode, value) in summary['top_avg'] %}
+                        <tr>
+                            <td><b>{{ pos + 1 }}</b></td>
+                            <td><a href="{{ url_for('.zipcode_summary', zipcode = zipcode) }}">{{ zipcode }}</a></td>
+                            <td>{{ '%.2f' % value }} €</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table> 
+                <a class="btn btn-primary" href="{{ request.path }}?top={{ summary['top_pays']|length + 5 }}">More</a>
             </div>
         </div>
 
@@ -94,7 +117,7 @@
                  <table class="table table-border table-hover">
                     <thead>
                         <tr>
-                            <th class="text-center">#</th>
+                            <th class="text-center">Age</th>
                             <th class="text-center">Male</th>
                             <th class="text-center">Female</th>
                             <th class="text-center">Company</th>
@@ -102,15 +125,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for i in [0, 1, 2, 3, 4, 5, 6, 'U' ] %}
+                        {% for age in ['0', '1', '2', '3', '4', '5', '6' ] %}
                         <tr>
-                            <td><b>{{ ages[i]  }}</b></td>
-                            <td>0.08%</td>
-                            <td>0.08%</td>
-                            <td>0.08%</td>
-                            <td>0.08%</td>
+                            <td><b>{{ ages[age]  }}</b></td>
+                            <td>{{ '%.2f' % cubes['male'][age] }} %</td>
+                            <td>{{ '%.2f' % cubes['female'][age] }} %</td>
+                            <td>{{ '%.2f' % cubes['enterprise'].get(age, 0) }} %</td>
+                            <td>{{ '%.2f' % cubes_totals[age] }} %</td>
                         </tr>
                         {% endfor %}
+                        <tr>
+                            <td><b>Total</b></td>
+                            <td>{{ '%.2f' % cubes_totals['male'] }} %</td>
+                            <td>{{ '%.2f' % cubes_totals['female'] }} %</td>
+                            <td>{{ '%.2f' % cubes_totals['enterprise'] }} %</td>
+                            <td>{{ '%.2f' % 100}} %</td>
+                        </tr>
                     </tbody>
                 </table>
                 {% else %}
@@ -125,6 +155,7 @@
         <div class="page-header">
             <h2>Distribution</h2>
         </div>
+        <p>Expenditure by zipcode, sorted by amount.</p>
         {{ timeline(summary['timeline_headers'], summary['timeline_values'], 'summary') }}
 
         <div class="page-header">
