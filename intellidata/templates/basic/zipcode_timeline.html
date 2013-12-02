@@ -1,15 +1,15 @@
-{% set link="basic" %}
-{% set title="Zipcode" %}
+{% set link="local" %}
+{% set title="Timeline" %}
 {% extends "master.html" %}
 {% block body %}
 
 {% from "_widgets.html" import timeline %}
 <div class="container">
-    <h2>Gasto medio</h2>
+    <h2>Average payment</h2>
     {{ timeline(data['avg'][0], data['avg'][1], "avg") }}
-    <h2>Pagos</h2>
+    <h2>Number of payments</h2>
     {{ timeline(data['num_payments'][0], data['num_payments'][1], "num_payments", "%i") }}
-    <h2>Gasto total</h2>
+    <h2>Total expenditure</h2>
     {{ timeline(data['total'][0], data['total'][1], "total") }}
 </div>
 
