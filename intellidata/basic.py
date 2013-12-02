@@ -1,12 +1,19 @@
 import json
+from operator import itemgetter
+from collections import OrderedDict
 
-from flask import Blueprint, render_template, url_for
+from flask import Blueprint, render_template, url_for, request
 
 from intellidata import mongo
 from .geotools import generate_zipcodes_map, Algorithms
 from .util import get_week_borders
 
 basic_blueprint = Blueprint('basic', __name__)
+
+FIELDS = { 'incomes' : 'Incomes', 'numcards' : 'Cards', 'numpay' : 'Payments' }
+WEEKS  = [u'201244', u'201245', u'201246', u'201247', u'201248', u'201249', u'201250', u'201251', u'201252', u'201301', u'201302', u'201303', u'201304', u'201305', u'201306', u'201307', u'201308', u'201309', u'201310', u'201311', u'201312', u'201313', u'201314', u'201315', u'201316', u'201317']
+MONTHS = [u'201211', u'201212', u'201301', u'201302', u'201303', u'201304']
+
 
 def generate_color_code(value, max_value):
     # white to red
@@ -85,40 +92,130 @@ def zipcode_summary(zipcode):
 
 @basic_blueprint.route('/zipcodes/<zipcode>/map/')
 def zipcode_map(zipcode):
-    fields = { 'incomes' : 'Incomes', 'numcards' : 'Cards', 'numpay' : 'Payments' }
-    return render_template("basic/map.html", zipcode = zipcode, algorithm = Algorithms.DEFAULT, algorithms = Algorithms.ALGORITHMS, field = 'incomes', fields = fields)
+    return zipcode_map_algorithm(zipcode, Algorithms.DEFAULT, 'incomes')
+
 
 @basic_blueprint.route('/zipcodes/<zipcode>/map/<algorithm>/<field>/')
 def zipcode_map_algorithm(zipcode, algorithm, field):
-    if algorithm not in Algorithms.ALGORITHMS:
-        return "Invalid algorithm"
-    fields = { 'incomes' : 'Incomes', 'numcards' : 'Cards', 'numpay' : 'Payments' }
-    if field not in fields:
-        return "Invalid field"
+    link_tpl = url_for('.zipcode_map_algorithm', zipcode = zipcode, algorithm = 'ALGORITHM', field = 'FIELD')
+    return _zipcode_map_algorithm_impl(zipcode, algorithm, field, link = link_tpl)
 
-    return render_template("basic/map.html", zipcode = zipcode, algorithm = algorithm, algorithms = Algorithms.ALGORITHMS, field = field, fields = fields)
+@basic_blueprint.route('/zipcodes/<zipcode>/map/<algorithm>/<field>/week/<week>/')
+def zipcode_map_algorithm_week(zipcode, algorithm, field, week):
+    link_tpl = url_for('.zipcode_map_algorithm_week', zipcode = zipcode, algorithm = 'ALGORITHM', field = 'FIELD', week = week)
+    return _zipcode_map_algorithm_impl(zipcode, algorithm, field, link = link_tpl, week = week)
+
+@basic_blueprint.route('/zipcodes/<zipcode>/map/<algorithm>/<field>/month/<month>/')
+def zipcode_map_algorithm_month(zipcode, algorithm, field, month):
+    link_tpl = url_for('.zipcode_map_algorithm_month', zipcode = zipcode, algorithm = 'ALGORITHM', field = 'FIELD', month = month)
+    return _zipcode_map_algorithm_impl(zipcode, algorithm, field, link = link_tpl, month = month)
+
+
+def _zipcode_map_algorithm_impl(zipcode, algorithm, field, link, week = None, month = None):
+    error, data = _retrieve_data(zipcode, algorithm, field, week, month)
+    if error:
+        return error
+
+    incomes  = map(itemgetter('incomes'), data.values())
+    numpay   = map(itemgetter('numpay'), data.values())
+    numcards = map(itemgetter('numcards'), data.values())
+
+    field_data = sorted(map(itemgetter(field), data.values()))
+    # So as to create the timeline, we need to show:
+    # axis X: each value
+    # axis Y: aggregated value
+    # TODO
+
+    summary = {
+        'incomes.total' : sum(incomes),
+        'numpay.total' : sum(numpay),
+        'numcards.total' : sum(numcards),
+        'timeline_headers' : range(len(field_data)),
+        'timeline_values'  : field_data,
+    }
+
+    if week is not None:
+        file_link_path = url_for('.zipcode_map_file_week', zipcode = zipcode, algorithm = algorithm, field = field, week = week)
+    elif month is not None:
+        file_link_path = url_for('.zipcode_map_file_month', zipcode = zipcode, algorithm = algorithm, field = field, month = month)
+    else:
+        file_link_path = url_for('.zipcode_map_file', zipcode = zipcode, algorithm = algorithm, field = field)
+
+    weeks = OrderedDict()
+    for week_id in WEEKS:
+        year = int(week_id[:4])
+        week_number = int(week_id[-2:])
+        start_day, _ = get_week_borders(week_number, year)
+        weeks[week_id] = start_day
+
+    months = OrderedDict()
+    for month_id in MONTHS:
+        year = int(month_id[:4])
+        month_number = int(month_id[-2:])
+        months[month_id] = '%s/%s' % (month_number, year)
+
+    return render_template("basic/map.html", zipcode = zipcode, algorithm = algorithm, algorithms = Algorithms.ALGORITHMS, field = field, fields = FIELDS, months = months, weeks = weeks, week = week, month = month, link_template = link, file_link_path = file_link_path, summary = summary)
 
 
 @basic_blueprint.route('/zipcodes/<zipcode>/map/filepath/<algorithm>/<field>/')
 def zipcode_map_file(zipcode, algorithm, field):
-    if algorithm not in Algorithms.ALGORITHMS:
-        return "Invalid algorithm"
+    return _zipcode_map_file_impl(zipcode, algorithm, field)
 
-    fields = { 'incomes' : 'Incomes', 'numcards' : 'Cards', 'numpay' : 'Payments' }
-    if field not in fields:
-        return "Invalid field"
+@basic_blueprint.route('/zipcodes/<zipcode>/map/filepath/<algorithm>/<field>/week/<week>/')
+def zipcode_map_file_week(zipcode, algorithm, field, week):
+    return _zipcode_map_file_impl(zipcode, algorithm, field, week = week)
+
+@basic_blueprint.route('/zipcodes/<zipcode>/map/filepath/<algorithm>/<field>/month/<month>/')
+def zipcode_map_file_month(zipcode, algorithm, field, month):
+    return _zipcode_map_file_impl(zipcode, algorithm, field, month = month)
+
+def _retrieve_data(zipcode, algorithm, field, week = None, month = None):
+    if algorithm not in Algorithms.ALGORITHMS:
+        return render_template("errors.html", message = "Invalid algorithm"), None
+
+    if field not in FIELDS:
+        return render_template("errors.html", message = "Invalid field"), None
+
+    if week is not None and week not in WEEKS:
+        return render_template("errors.html", message = "Invalid week"), None
+
+    if month is not None and month not in MONTHS:
+        return render_template("errors.html", message = "Invalid month"), None
 
     zipcode_data = next(mongo.db.top_clients_summary.find({ '_id' : zipcode }), None)
+    if zipcode_data is None:
+        return render_template("errors.html", message = "zipcode not found"), None
+
     data = {}
 
-    for zcode, zdata in zipcode_data['value']['home_zipcodes'].iteritems():
-        data[zcode] = dict(
-            incomes      = zdata['per_week']['total']['total']['incomes'],
-            numcards     = int(zdata['per_week']['total']['total']['num_cards']),
-            numpay       = int(zdata['per_week']['total']['total']['num_payments'])
-        )
+    if month is not None:
+        key = 'per_month'
+    else:
+        key = 'per_week'
 
-    svg_file_path = generate_zipcodes_map(data, zipcode, 'total', field, algorithm)
+    if week is not None:
+        value = week
+    elif month is not None:
+        value = month
+    else:
+        value = 'total'
+
+    for zcode, zdata in zipcode_data['value']['home_zipcodes'].iteritems():
+        if key in zdata and value in zdata[key]:
+            data[zcode] = dict(
+                incomes      = zdata[key][value]['total']['incomes'],
+                numcards     = int(zdata[key][value]['total']['num_cards']),
+                numpay       = int(zdata[key][value]['total']['num_payments'])
+            )
+    return None, data
+
+
+def _zipcode_map_file_impl(zipcode, algorithm, field, week = None, month = None):
+    error, data = _retrieve_data(zipcode, algorithm, field, week, month)
+    if error:
+        return error
+
+    svg_file_path = generate_zipcodes_map(data, zipcode, '%s_%s' % (week or 'anyweek', month or 'anymonth'), field, algorithm)
     svg_file_path = 'geo/' + svg_file_path.split('/')[-1]
     return json.dumps({ 'url' : url_for('static', filename = svg_file_path) })
 

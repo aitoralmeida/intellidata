@@ -57,9 +57,27 @@
 
 {% endmacro %}
 
-{% macro map(id, svg_map_file, url_template, zipcode, algorithm, algorithms, field, fields) %}
+{% macro timeline_scripts(skip_raphael = False) %}
+    {% if not skip_raphael %}
+        <script src="{{ url_for('static', filename='js/raphael-min.js') }}"></script>
+    {% endif %}
+    <script src="{{ url_for('static', filename='js/raphael-analytics.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/raphael-popup.js') }}"></script>
+{% endmacro %}
+
+{% macro timeline_load(table_id, name = None) %}
+    <script>
+        {% if name %}
+            loadTimetable("{{ table_id }}", "{{ name }}");
+        {% else %}
+            loadTimetable("{{ table_id }}");
+        {% endif %}
+    </script>
+{% endmacro %}
+
+{% macro map(id, svg_map_file, url_template, file_url, zipcode, algorithm, algorithms, field, fields) %}
         <div class="alert alert-error" id="error_message_{{ id }}">
-            <h1>There was an error accessing data. Check <a href="{{ url_for('.zipcode_map_file', zipcode = zipcode, algorithm = algorithm, field = field) }}">this</a>. </h1>
+            <h1>There was an error accessing data. Check <a href="{{ file_url }}">this</a>. </h1>
         </div>
         <div class="alert" id="generating_file_message_{{ id }}">
             <h1>Generating map...</h1>

@@ -3,18 +3,61 @@
 {% extends "master.html" %}
 {% block body %}
         
-    {% from "_widgets.html" import map %}
+    {% from "_widgets.html" import map, timeline %}
 
     <div class="container text-center">
-        {{ map("0", url_for('.zipcode_map_file', zipcode = zipcode, algorithm = algorithm, field = field), url_for('.zipcode_map_algorithm', zipcode = zipcode, algorithm = 'ALGORITHM', field = 'FIELD'), zipcode, algorithm, algorithms, field, fields) }}
+        <h1>Information for zipcode {{ zipcode }}</h1>
+
+        <div class="row">
+            <div class="col-lg-6">
+                {{ map("0", file_link_path, link_template, file_link_path, zipcode, algorithm, algorithms, field, fields) }}
+            </div>
+
+            <div class="col-lg-6">
+                <table>
+                    <tr>
+                        <td><b>Incomes: </b></td>
+                        <td>{{ summary['incomes.total'] }}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Payments: </b></td>
+                        <td>{{ summary['numpay.total'] }}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Cards: </b></td>
+                        <td>{{ summary['numcards.total'] }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+
+        {{ timeline(summary['timeline_headers'], summary['timeline_values'], 'summary') }}
+
+        <div>Months: 
+        <a class="btn btn-primary" href="{{ url_for('.zipcode_map_algorithm', zipcode = zipcode, algorithm = algorithm, field = field) }}">Total</a>
+        {% for cur_month in months %}
+            <a class="btn {% if month == cur_month %}btn-default{%else%}btn-primary{% endif %}" href="{{ url_for('.zipcode_map_algorithm_month', zipcode = zipcode, algorithm = algorithm, field = field, month = cur_month) }}">{{ months[cur_month] }}</a>
+        {% endfor %}
+        </div>
+        <div>Weeks:
+        <a class="btn btn-primary" href="{{ url_for('.zipcode_map_algorithm', zipcode = zipcode, algorithm = algorithm, field = field) }}">Total</a>
+        {% for cur_week in weeks %}
+            <a class="btn {% if week == cur_week %}btn-default{%else%}btn-primary{% endif %}" href="{{ url_for('.zipcode_map_algorithm_week', zipcode = zipcode, algorithm = algorithm, field = field, week = cur_week) }}">{{ weeks[cur_week].date() }}</a>
+        {% endfor %}
+        </div>
     </div>
 
 {% endblock %}
 {% block scripts %}
 
-    {% from "_widgets.html" import map_scripts, map_initializer %}
+    {% from "_widgets.html" import map_scripts, map_initializer, timeline_scripts, timeline_load %}
 
     {{ map_scripts() }}
-    {{ map_initializer("0", url_for('.zipcode_map_file', zipcode = zipcode, algorithm = algorithm, field = field), fields) }}
+    {{ timeline_scripts(skip_raphael = True) }}
+
+
+    {{ map_initializer("0", file_link_path, fields) }}
+    {{ timeline_load("summary") }}
 
 {% endblock %}

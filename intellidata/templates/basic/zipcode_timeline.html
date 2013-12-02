@@ -16,14 +16,10 @@
 {% endblock %}
 
 {% block scripts %}
-
-    <script src="{{ url_for('static', filename='js/raphael-min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/raphael-analytics.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/raphael-popup.js') }}"></script>
-    <script>
-        loadTimetable("avg");
-        loadTimetable("num_payments", 'payment');
-        loadTimetable("total");
-    </script>
+{% from "_widgets.html" import timeline_scripts, timeline_load %}
+    {{ timeline_scripts() }}
+    {{ timeline_load('avg') }}
+    {{ timeline_load('num_payments', 'payment') }}
+    {{ timeline_load('total') }}
 {% endblock %}
 
