@@ -8,9 +8,9 @@ from intellidata import mongo
 from .geotools import generate_zipcodes_map, Algorithms
 from .util import get_week_borders, generate_color_code, generate_timetable, FIELDS, WEEKS, MONTHS, CATEGORIES, KMS
 
-basic_blueprint = Blueprint('basic', __name__)
+local_blueprint = Blueprint('local', __name__)
 
-@basic_blueprint.route('/zipcodes/')
+@local_blueprint.route('/zipcodes/')
 def zipcodes():
     madrid_zipcodes    = []
     barcelona_zipcodes = []
@@ -22,26 +22,26 @@ def zipcodes():
             madrid_zipcodes.append(zipcode)
     return render_template("basic/zipcodes.html", madrid_zipcodes = sorted(madrid_zipcodes), barcelona_zipcodes = sorted(barcelona_zipcodes))
 
-@basic_blueprint.route('/zipcodes/<zipcode>/')
+@local_blueprint.route('/zipcodes/<zipcode>/')
 def zipcode_summary(zipcode):
     return render_template("basic/zipcode.html", zipcode = zipcode)
 
-@basic_blueprint.route('/zipcodes/<zipcode>/map/')
+@local_blueprint.route('/zipcodes/<zipcode>/map/')
 def zipcode_map(zipcode):
     return zipcode_map_algorithm(zipcode, Algorithms.DEFAULT, 'incomes')
 
 
-@basic_blueprint.route('/zipcodes/<zipcode>/map/<algorithm>/<field>/')
+@local_blueprint.route('/zipcodes/<zipcode>/map/<algorithm>/<field>/')
 def zipcode_map_algorithm(zipcode, algorithm, field):
     link_tpl = url_for('.zipcode_map_algorithm', zipcode = zipcode, algorithm = 'ALGORITHM', field = 'FIELD')
     return _zipcode_map_algorithm_impl(zipcode, algorithm, field, link = link_tpl)
 
-@basic_blueprint.route('/zipcodes/<zipcode>/map/<algorithm>/<field>/week/<week>/')
+@local_blueprint.route('/zipcodes/<zipcode>/map/<algorithm>/<field>/week/<week>/')
 def zipcode_map_algorithm_week(zipcode, algorithm, field, week):
     link_tpl = url_for('.zipcode_map_algorithm_week', zipcode = zipcode, algorithm = 'ALGORITHM', field = 'FIELD', week = week)
     return _zipcode_map_algorithm_impl(zipcode, algorithm, field, link = link_tpl, week = week)
 
-@basic_blueprint.route('/zipcodes/<zipcode>/map/<algorithm>/<field>/month/<month>/')
+@local_blueprint.route('/zipcodes/<zipcode>/map/<algorithm>/<field>/month/<month>/')
 def zipcode_map_algorithm_month(zipcode, algorithm, field, month):
     link_tpl = url_for('.zipcode_map_algorithm_month', zipcode = zipcode, algorithm = 'ALGORITHM', field = 'FIELD', month = month)
     return _zipcode_map_algorithm_impl(zipcode, algorithm, field, link = link_tpl, month = month)
@@ -93,15 +93,15 @@ def _zipcode_map_algorithm_impl(zipcode, algorithm, field, link, week = None, mo
     return render_template("basic/map.html", zipcode = zipcode, algorithm = algorithm, algorithms = Algorithms.ALGORITHMS, field = field, fields = FIELDS, months = months, weeks = weeks, week = week, month = month, link_template = link, file_link_path = file_link_path, summary = summary)
 
 
-@basic_blueprint.route('/zipcodes/<zipcode>/map/filepath/<algorithm>/<field>/')
+@local_blueprint.route('/zipcodes/<zipcode>/map/filepath/<algorithm>/<field>/')
 def zipcode_map_file(zipcode, algorithm, field):
     return _zipcode_map_file_impl(zipcode, algorithm, field)
 
-@basic_blueprint.route('/zipcodes/<zipcode>/map/filepath/<algorithm>/<field>/week/<week>/')
+@local_blueprint.route('/zipcodes/<zipcode>/map/filepath/<algorithm>/<field>/week/<week>/')
 def zipcode_map_file_week(zipcode, algorithm, field, week):
     return _zipcode_map_file_impl(zipcode, algorithm, field, week = week)
 
-@basic_blueprint.route('/zipcodes/<zipcode>/map/filepath/<algorithm>/<field>/month/<month>/')
+@local_blueprint.route('/zipcodes/<zipcode>/map/filepath/<algorithm>/<field>/month/<month>/')
 def zipcode_map_file_month(zipcode, algorithm, field, month):
     return _zipcode_map_file_impl(zipcode, algorithm, field, month = month)
 
@@ -156,7 +156,7 @@ def _zipcode_map_file_impl(zipcode, algorithm, field, week = None, month = None)
     return json.dumps({ 'url' : url_for('static', filename = svg_file_path) })
 
 
-@basic_blueprint.route('/zipcodes/<zipcode>/timeline/')
+@local_blueprint.route('/zipcodes/<zipcode>/timeline/')
 def zipcode_timeline(zipcode):
     zipcode_data = next(mongo.db.shop_zipcode_summary.find({ '_id' : zipcode }), None)
     if zipcode_data is None:
@@ -180,7 +180,7 @@ def zipcode_timeline(zipcode):
 
     return render_template("basic/zipcode_timeline.html", zipcode = zipcode, data = data)
 
-@basic_blueprint.route('/zipcodes/<zipcode>/timetables/')
+@local_blueprint.route('/zipcodes/<zipcode>/timetables/')
 def zipcode_timetables(zipcode):
     zipcode_data = next(mongo.db.shop_zipcode_summary.find({ '_id' : zipcode }), None)
     if zipcode_data is None:
@@ -192,7 +192,7 @@ def zipcode_timetables(zipcode):
     categories = zipcode_data['value']['categories'].keys()
     return render_template("basic/zipcode_timetable.html", total_timetables = total_timetables, categories = categories, zipcode = zipcode)
 
-@basic_blueprint.route('/zipcodes/<zipcode>/timetables/<category>/')
+@local_blueprint.route('/zipcodes/<zipcode>/timetables/<category>/')
 def zipcode_timetables_category(zipcode, category):
     zipcode_data = next(mongo.db.shop_zipcode_summary.find({ '_id' : zipcode }), None)
     if zipcode_data is None:
@@ -206,7 +206,7 @@ def zipcode_timetables_category(zipcode, category):
 
     return render_template("basic/zipcode_timetable_category.html", category_name = category.title(), category_timetable = category_timetable)
 
-@basic_blueprint.route("/zipcodes/<zipcode>/top_clients/")
+@local_blueprint.route("/zipcodes/<zipcode>/top_clients/")
 def zipcode_top_clients(zipcode):
     return ":-)"
 

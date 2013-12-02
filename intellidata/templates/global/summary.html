@@ -1,0 +1,98 @@
+{% set link="global" %}
+{% set title="Global summary" %}
+{% extends "master.html" %}
+{% block body %}
+
+{% from "_widgets.html" import timeline %}
+
+<div class="container">
+    <a name="top"></a>
+    <div class="page-header">
+        <h1>Global summary</h1>
+    </div>
+
+    <p>This section includes a global summary of the analyzed dataset. It includes a summary of which zipcodes are more relevant for each category, timelines of the global trends in all categories, as well as heat maps of the time of the day which is more active in all categories. It is possible to retrieve more fine grained data in the local section.</p>
+
+    <h2>Table of contents</h2>
+    <ul>
+        <li><a href="#summary">Summary</a></li>
+        <li><a href="#timelines">Timelines</a></li>
+        <li><a href="#timetables">Timetables</a></li>
+    </ul>
+
+    <a name="summary"></a>
+    <h2>Summary</h2>
+    <p>This table summarizes which zipcodes are more relevant for each category. It is calculated using the social network between the different zipcodes, and processing the network using <a href="http://networkx.github.io/">networkx</a>.</p>
+    <table class="table table-border table-hover">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Main destination <a class="glyphicon glyphicon-question-sign" title="" href="javascript:void(0)" data-role="tooltip" data-original-title="Zipcode with most travelers from other zipcodes"></a></th>
+                <th>Highest incomes <a class="glyphicon glyphicon-question-sign" title="" href="javascript:void(0)" data-role="tooltip" data-original-title="Zipcode with highest incomes from other zipcodes"></a></th>
+                <th>Highest expenditure <a class="glyphicon glyphicon-question-sign" title="" href="javascript:void(0)" data-role="tooltip" data-original-title="Zipcode with highest expenditure in other zipcodes"></a></th>
+                <th>Most important <a class="glyphicon glyphicon-question-sign" title="" href="javascript:void(0)" data-role="tooltip" data-original-title="Zipcode with highest eigenvector centrality"></a></th>
+                <th>Most traveler <a class="glyphicon glyphicon-question-sign" title="" href="javascript:void(0)" data-role="tooltip" data-original-title="Zipcode with more payments in other zipcodes"></a></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+            <tr>
+                <td><b>{{ category_names[category] }}</b></td>
+                <td><a href="{{ url_for('local.zipcode_summary', zipcode=summary[category]['biggest_receiver']) }}" class="btn btn-link">{{ summary[category]['biggest_receiver'] }}</a></td>
+                <td><a href="{{ url_for('local.zipcode_summary', zipcode=summary[category]['biggest_receiver']) }}" class="btn btn-link">{{ summary[category]['biggest_earner'] }}</a></td>
+                <td><a href="{{ url_for('local.zipcode_summary', zipcode=summary[category]['biggest_receiver']) }}" class="btn btn-link">{{ summary[category]['biggest_expender'] }}</a></td>
+                <td><a href="{{ url_for('local.zipcode_summary', zipcode=summary[category]['biggest_receiver']) }}" class="btn btn-link">{{ summary[category]['most_central'] }}</a></td>
+                <td><a href="{{ url_for('local.zipcode_summary', zipcode=summary[category]['biggest_receiver']) }}" class="btn btn-link">{{ summary[category]['biggest_traveler'] }}</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a name="timelines"></a>
+    <h2>Timelines</h2>
+
+    <p>This visualization helps to identify the global trends in all the categories for each week. For a more fine grained visualization for each zipcode, go to the <a href="{{ url_for('local.zipcodes') }}">local section</a>.</p>
+
+    <h3>Incomes</h3>
+    {{ timeline(timelines['sorted_weeks'], timelines['incomes'], "total") }}
+    <h3>Number of payments</h3>
+    {{ timeline(timelines['sorted_weeks'], timelines['num_payments'], "num_payments") }}
+    <h3>Average payment</h3>
+    {{ timeline(timelines['sorted_weeks'], timelines['avg'], "avg") }}
+
+    <div class="row">
+        <div class="alert alert-success col-lg-6 col-lg-offset-2 text-center">
+            <h2>More timelines?</h2>
+            <p>There are detailed timelines in <a href="{{ url_for('.summary_timeline') }}">the timelines section</a> and in each <a href="{{ url_for('local.zipcodes') }}">zipcode summary</a>.</p>
+        </div>
+    </div>
+
+
+    <a name="timetables"></a>
+    <h2>Timetables</h2>
+
+
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+{% from "_widgets.html" import timeline_scripts, timeline_load %}
+
+    {{ timeline_scripts() }}
+    {{ timeline_load('avg') }}
+    {{ timeline_load('num_payments', 'payment') }}
+    {{ timeline_load('total') }}
+
+    <script>
+        (function($) {
+            $('[data-role=tooltip]').tooltip({
+                html: true,
+                placement: 'bottom'
+            });
+        })(jQuery);
+    </script>    
+
+{% endblock %}

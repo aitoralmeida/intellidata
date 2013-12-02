@@ -10,7 +10,7 @@
 
     {% for x in madrid_zipcodes %}
     <div class="col-lg-1">
-        <a href="{{ url_for('basic.zipcode_summary', zipcode=x) }}">{{ x }}</a>
+        <a href="{{ url_for('local.zipcode_summary', zipcode=x) }}">{{ x }}</a>
     </div>
     {% endfor %}
 
@@ -20,7 +20,7 @@
     </div>   
     {% for x in barcelona_zipcodes %}
     <div class="col-lg-1">
-        <a href="{{ url_for('basic.zipcode_summary', zipcode=x) }}">{{ x }}</a>
+        <a href="{{ url_for('local.zipcode_summary', zipcode=x) }}">{{ x }}</a>
     </div>
     {% endfor %}
 

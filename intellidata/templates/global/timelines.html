@@ -1,0 +1,49 @@
+{% set link="global" %}
+{% set title="Global summary" %}
+{% extends "master.html" %}
+{% block body %}
+
+{% from "_widgets.html" import timeline %}
+
+<div class="container">
+
+    <h1>Global category timelines</h1>
+
+    <p>This section displays all the timelines per category.</p>
+
+    <ul>
+        {% for category in sorted_categories %}
+            <li><a href="#{{ category }}">{{ category_names[category] }}</a></li>
+        {% endfor %}
+    </ul>
+
+    {% for category in sorted_categories %}
+        <a name="{{ category }}"></a>
+        <div class="page-header">
+        <h2>{{ category_names[category] }}</h2>
+        </div>
+        <h3>Incomes</h3>
+        {{ timeline(timelines['sorted_weeks'], timelines[category]['incomes'], "%s_total" % category) }}
+        <h3>Number of payments</h3>
+        {{ timeline(timelines['sorted_weeks'], timelines[category]['num_payments'], "%s_num_payments" % category) }}
+        <h3>Average payment</h3>
+        {{ timeline(timelines['sorted_weeks'], timelines[category]['avg'], "%s_avg" % category) }}
+    {% endfor %}
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+{% from "_widgets.html" import timeline_scripts, timeline_load %}
+
+    {{ timeline_scripts() }}
+
+    {% for category in sorted_categories %}
+        {{ timeline_load('%s_avg' % category) }}
+        {{ timeline_load('%s_num_payments' % category, 'payment') }}
+        {{ timeline_load('%s_total' % category) }}
+    {% endfor %}
+
+{% endblock %}

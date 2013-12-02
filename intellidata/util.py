@@ -8,6 +8,27 @@ CATEGORIES = ['es_auto','es_barsandrestaurants','es_contents','es_fashion',
               'es_leisure','es_otherservices','es_propertyservices',
               'es_sportsandtoys','es_tech','es_transportation','es_travel',
               'es_wellnessandbeauty']
+CATEGORY_NAMES = {
+    'es_auto' : 'Automotive',
+    'es_barsandrestaurants' : 'Bars & Restaurants',
+    'es_contents' : 'Contents',
+    'es_fashion' : 'Fashion',
+    'es_food' : 'Food',
+    'es_health' : 'Health',
+    'es_home' : 'Home',
+    'es_hotelservices' : 'Hotel services',
+    'es_hyper' : 'Hypers',
+    'es_leisure' : 'Leisure',
+    'es_otherservices' : 'Other services',
+    'es_propertyservices' : 'Property services',
+    'es_sportsandtoys' : 'Sports & Toys',
+    'es_tech' : 'Technology',
+    'es_transportation' : 'Transportation',
+    'es_travel' : 'Travel',
+    'es_wellnessandbeauty' : 'Wellness & Beauty',
+    'total' : 'Total',
+    'complete' : 'Total',
+}
 KMS = [50, 100, 200, 300, 400]
 
 
