@@ -1,0 +1,31 @@
+{% set link="basic" %}
+{% set title="Adjancency Matrix" %}
+{% extends "master.html" %}
+{% block body %}
+
+<div class="container">
+    <h1>Adjacency matrix</h1>
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>#</th>
+                {% for km in kms %}
+                    <th>{{ km }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+                <tr>
+                    <td><b>{{ category }}</b></td>
+                    {% for km in kms %}
+                        <td><a href="{{ url_for('.adjacency_category', category = category, kms = km) }}" class="btn btn-link">{{ km }} {{ category }}</a></td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
+

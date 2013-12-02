@@ -13,7 +13,12 @@ basic_blueprint = Blueprint('basic', __name__)
 FIELDS = { 'incomes' : 'Incomes', 'numcards' : 'Cards', 'numpay' : 'Payments' }
 WEEKS  = [u'201244', u'201245', u'201246', u'201247', u'201248', u'201249', u'201250', u'201251', u'201252', u'201301', u'201302', u'201303', u'201304', u'201305', u'201306', u'201307', u'201308', u'201309', u'201310', u'201311', u'201312', u'201313', u'201314', u'201315', u'201316', u'201317']
 MONTHS = [u'201211', u'201212', u'201301', u'201302', u'201303', u'201304']
-
+CATEGORIES = ['es_auto','es_barsandrestaurants','es_contents','es_fashion',
+              'es_food','es_health','es_home','es_hotelservices','es_hyper',
+              'es_leisure','es_otherservices','es_propertyservices',
+              'es_sportsandtoys','es_tech','es_transportation','es_travel',
+              'es_wellnessandbeauty']
+KMS = [50, 100, 200, 300, 400]
 
 def generate_color_code(value, max_value):
     # white to red
@@ -73,6 +78,24 @@ def generate_timetable(days_data):
                 cur_data = timetables[field]['hours'][hour][day]
                 cur_data['color'] = generate_color_code(cur_data['value'], max_value)
     return timetables
+
+@basic_blueprint.route('/adjacency/')
+def adjacency():
+    return render_template("basic/adjacency_index.html", kms = KMS, categories = CATEGORIES)
+
+@basic_blueprint.route('/adjacency/<category>/<int:kms>/')
+def adjacency_category(category, kms):
+    if kms not in KMS:
+        return render_template("errors.html", message = "Invalid kilometers")
+
+    if category not in CATEGORIES:
+        return render_template("errors.html", message = "Invalid category")
+    
+    fname = 'matrix/%s%s.json' % (kms, category)
+    size = len(json.load(open('intellidata/static/' + fname))['nodes']) * 13.5
+
+    return render_template("basic/adjacency.html", json_filename = url_for('static', filename = fname), kms = kms, category = category, width = size, height = size)
+
 
 @basic_blueprint.route('/zipcodes/')
 def zipcodes():

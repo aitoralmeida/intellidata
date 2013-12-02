@@ -267,7 +267,11 @@ def create_matrix_jsons(kms=100):
         print '**** Processing: ' + c
         G = get_relations_by_category('total',c, kms)
         G = get_groups(G)
-        export_json(G, './data/jsons_matrix/' + str(kms) + c + '.json') 
+        export_json(G, './intellidata/static/matrix/' + str(kms) + c + '.json') 
+    G = get_total_relations(kms)
+    G = get_groups(G)
+    export_json(G, './intellidata/static/matrix/' + str(kms) + 'total.json') 
+
         
     
 
@@ -298,12 +302,13 @@ def create_matrix_jsons(kms=100):
 
 
 print 'starting'
-create_matrix_jsons(100)
-summary = create_complete_summary()
-summary_json = json.dumps(summary)
-with open('./data/summary.json', 'w') as f:
-     f.write(summary_json)
-     f.flush()
+for kms in 50, 100, 200, 300, 400:
+    create_matrix_jsons(kms)
+# summary = create_complete_summary()
+# summary_json = json.dumps(summary)
+# with open('./data/summary.json', 'w') as f:
+#      f.write(summary_json)
+#      f.flush()
 
    
 print 'fin' 
