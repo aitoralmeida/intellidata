@@ -77,11 +77,79 @@ def _zipcode_map_algorithm_impl(zipcode, algorithm, field, link, week = None, mo
 
     if week is not None:
         file_link_path = url_for('.zipcode_map_file_week', zipcode = zipcode, algorithm = algorithm, field = field, week = week)
+        mode = 'week'
     elif month is not None:
         file_link_path = url_for('.zipcode_map_file_month', zipcode = zipcode, algorithm = algorithm, field = field, month = month)
+        mode = 'month'
     else:
         file_link_path = url_for('.zipcode_map_file', zipcode = zipcode, algorithm = algorithm, field = field)
+        mode = 'total'
 
+    # 
+    # Obtain demography data
+    # 
+    zipcode_data = next(mongo.db.shop_zipcode_summary.find({ '_id' : zipcode }), None)
+    AGES = {
+        '0' : '0-18',
+        '1' : '19-25',
+        '2' : '26-35',
+        '3' : '36-45',
+        '4' : '46-55',
+        '5' : '56-65',
+        '6' : '66+',
+        'U' : 'unknown',
+    }
+
+    if zipcode_data is None:
+        demography = False
+    else:
+        value = zipcode_data['value']
+
+        field_translator = {
+            'numpay' : 'num_payments',
+            'cards'  : 'num_cards',
+            'incomes' : 'total'
+        }
+        current_field = field_translator[field]
+
+        demography = False
+
+        if mode == 'week':
+            pass
+        elif mode == 'month':
+            pass
+        else:
+            demography = True
+            cubes = {
+                'male' : {
+                    '0' : 0, '1' : 0, '2' : 0, '3' : 0, '4' : 0, '5' : 0, '6' : 0, 'U' : 0,
+                },
+                'female' : {
+                    '0' : 0, '1' : 0, '2' : 0, '3' : 0, '4' : 0, '5' : 0, '6' : 0, 'U' : 0,
+                },
+                'enterprise' : {
+                    'U' : 0,
+                },
+                'unknown' : {
+                    '0' : 0, '1' : 0, '2' : 0, '3' : 0, '4' : 0, '5' : 0, '6' : 0, 'U' : 0,
+                }
+            }
+            total = 0
+            for category_data in value['categories'].values():
+                for month_data in category_data['months'].values():
+                    cube_data = month_data['cubes']['cubes']
+                    for gender in cube_data:
+                        for age in cube_data[gender]:
+                            cubes[gender][age] += cube_data[gender][age][current_field]
+                            total += cube_data[gender][age][current_field]
+
+            for gender in cubes:
+                for age in cubes[gender]:
+                    cubes[gender][age] = 100.0 * cubes[gender][age] / total
+    
+    # 
+    # Show navigation
+    # 
     weeks = OrderedDict()
     for week_id in WEEKS:
         year = int(week_id[:4])
@@ -95,7 +163,7 @@ def _zipcode_map_algorithm_impl(zipcode, algorithm, field, link, week = None, mo
         month_number = int(month_id[-2:])
         months[month_id] = '%s/%s' % (month_number, year)
 
-    return render_template("basic/map.html", zipcode = zipcode, algorithm = algorithm, algorithms = Algorithms.ALGORITHMS, field = field, fields = FIELDS, months = months, weeks = weeks, week = week, month = month, link_template = link, file_link_path = file_link_path, summary = summary, top_pays = top_pays, top_incomes = top_incomes)
+    return render_template("basic/map.html", zipcode = zipcode, algorithm = algorithm, algorithms = Algorithms.ALGORITHMS, field = field, fields = FIELDS, months = months, weeks = weeks, week = week, month = month, link_template = link, file_link_path = file_link_path, summary = summary, top_pays = top_pays, top_incomes = top_incomes, demography = demography, cubes = cubes, ages = AGES)
 
 
 @local_blueprint.route('/zipcodes/<zipcode>/map/filepath/<algorithm>/<field>/')

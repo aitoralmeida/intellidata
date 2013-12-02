@@ -90,7 +90,7 @@
                 <div class="page-header">
                     <h2>Demography</h2>
                 </div>
-                    
+                {% if demography %} 
                  <table class="table table-border table-hover">
                     <thead>
                         <tr>
@@ -102,9 +102,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for i in [0, 1, 2, 3, 4, 5, 6 ] %}
+                        {% for i in [0, 1, 2, 3, 4, 5, 6, 'U' ] %}
                         <tr>
-                            <td><b>{{ 10 * i  }}</b></td>
+                            <td><b>{{ ages[i]  }}</b></td>
                             <td>0.08%</td>
                             <td>0.08%</td>
                             <td>0.08%</td>
@@ -112,7 +112,13 @@
                         </tr>
                         {% endfor %}
                     </tbody>
-                </table>             
+                </table>
+                {% else %}
+                <div class="alert alert-danger">
+                    <h1>Demographic data not found</h1>
+                    <p>There is no demographic data for this particular zipcode in this particular period of time.</p>
+                </div>
+                {% endif %}
             </div>
         </div>
 
