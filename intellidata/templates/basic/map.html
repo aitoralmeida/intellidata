@@ -6,33 +6,124 @@
     {% from "_widgets.html" import map, timeline %}
 
     <div class="container text-center">
-        <h1>Information for zipcode {{ zipcode }}</h1>
+        <div class="page-header">
+            <h1>Information for zipcode {{ zipcode }}</h1>
+            <p>This section includes detailed information of {{ zipcode }}</p>
+        </div>
 
         <div class="row">
-            <div class="col-lg-6">
-                {{ map("0", file_link_path, link_template, file_link_path, zipcode, algorithm, algorithms, field, fields) }}
-            </div>
-
-            <div class="col-lg-6">
-                <table>
-                    <tr>
-                        <td><b>Incomes: </b></td>
-                        <td>{{ summary['incomes.total'] }}</td>
-                    </tr>
-                    <tr>
-                        <td><b>Payments: </b></td>
-                        <td>{{ summary['numpay.total'] }}</td>
-                    </tr>
-                    <tr>
-                        <td><b>Cards: </b></td>
-                        <td>{{ summary['numcards.total'] }}</td>
-                    </tr>
+            <div class="col-lg-3 col-lg-offset-2">
+                <table class="table table-border table-hover">
+                    <thead>
+                        <tr>
+                            <th class="text-center">#</th>
+                            <th class="text-center">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><b>Incomes: </b></td>
+                            <td>{{ summary['incomes.total'] }}</td>
+                        </tr>
+                        <tr>
+                            <td><b>Payments: </b></td>
+                            <td>{{ summary['numpay.total'] }}</td>
+                        </tr>
+                        <tr>
+                            <td><b>Cards: </b></td>
+                            <td>{{ summary['numcards.total'] }}</td>
+                        </tr>
+                    </tbody>
                 </table>
+            </div>
+            <div class="col-lg-3">
+                 <table class="table table-border table-hover">
+                    <thead>
+                        <tr>
+                            <th class="text-center">#</th>
+                            <th class="text-center">Top zipcodes</th>
+                            <th class="text-center">Incomes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pos, (zipcode, value) in top_incomes %}
+                        <tr>
+                            <td><b>{{ pos + 1 }}</b></td>
+                            <td>{{ zipcode }}</td>
+                            <td>{{ value }} €</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>               
+            </div>
+            <div class="col-lg-3">
+                 <table class="table table-border table-hover">
+                    <thead>
+                        <tr>
+                            <th class="text-center">#</th>
+                            <th class="text-center">Top zipcodes</th>
+                            <th class="text-center">Payments</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {%  for pos, (zipcode, value) in top_pays %}
+                        <tr>
+                            <td><b>{{ pos + 1 }}</b></td>
+                            <td>{{ zipcode }}</td>
+                            <td>{{ value }} payments</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>             
             </div>
         </div>
 
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="page-header">
+                    <h2>Heat map</h2>
+                </div>
+                {{ map("0", file_link_path, link_template, file_link_path, zipcode, algorithm, algorithms, field, fields) }}
+            </div>
 
+            <div class="col-lg-5 col-lg-offset-1">
+                <div class="page-header">
+                    <h2>Demography</h2>
+                </div>
+                    
+                 <table class="table table-border table-hover">
+                    <thead>
+                        <tr>
+                            <th class="text-center">#</th>
+                            <th class="text-center">Male</th>
+                            <th class="text-center">Female</th>
+                            <th class="text-center">Company</th>
+                            <th class="text-center">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in [0, 1, 2, 3, 4, 5, 6 ] %}
+                        <tr>
+                            <td><b>{{ 10 * i  }}</b></td>
+                            <td>0.08%</td>
+                            <td>0.08%</td>
+                            <td>0.08%</td>
+                            <td>0.08%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>             
+            </div>
+        </div>
+
+        <div class="page-header">
+            <h2>Distribution</h2>
+        </div>
         {{ timeline(summary['timeline_headers'], summary['timeline_values'], 'summary') }}
+
+        <div class="page-header">
+            <h2>Navigate</h2>
+        </div>
 
         <div>Months: 
         <a class="btn btn-primary" href="{{ url_for('.zipcode_map_algorithm', zipcode = zipcode, algorithm = algorithm, field = field) }}">Total</a>

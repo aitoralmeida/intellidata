@@ -56,6 +56,11 @@ def _zipcode_map_algorithm_impl(zipcode, algorithm, field, link, week = None, mo
     numpay   = map(itemgetter('numpay'), data.values())
     numcards = map(itemgetter('numcards'), data.values())
 
+    MAX_TOP = 5
+
+    top_incomes = zip(range(MAX_TOP), sorted(zip(data.keys(), incomes), lambda (k1, v1), (k2,v2) : cmp(v2, v1))[:MAX_TOP])
+    top_pays    = zip(range(MAX_TOP), sorted(zip(data.keys(), numpay), lambda (k1, v1), (k2,v2) : cmp(v2, v1))[:MAX_TOP])
+
     field_data = sorted(map(itemgetter(field), data.values()))
     # So as to create the timeline, we need to show:
     # axis X: each value
@@ -90,7 +95,7 @@ def _zipcode_map_algorithm_impl(zipcode, algorithm, field, link, week = None, mo
         month_number = int(month_id[-2:])
         months[month_id] = '%s/%s' % (month_number, year)
 
-    return render_template("basic/map.html", zipcode = zipcode, algorithm = algorithm, algorithms = Algorithms.ALGORITHMS, field = field, fields = FIELDS, months = months, weeks = weeks, week = week, month = month, link_template = link, file_link_path = file_link_path, summary = summary)
+    return render_template("basic/map.html", zipcode = zipcode, algorithm = algorithm, algorithms = Algorithms.ALGORITHMS, field = field, fields = FIELDS, months = months, weeks = weeks, week = week, month = month, link_template = link, file_link_path = file_link_path, summary = summary, top_pays = top_pays, top_incomes = top_incomes)
 
 
 @local_blueprint.route('/zipcodes/<zipcode>/map/filepath/<algorithm>/<field>/')
