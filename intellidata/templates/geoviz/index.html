@@ -1,0 +1,77 @@
+{% set link="basic" %}
+{% set title="Basic" %}
+{% extends "master.html" %}
+{% block body %}
+
+     <form style="display: none"> 
+      <span class="label label-info">Graph:</span> 
+      <select id="grafos"> <option value="0">[Select]</option> <optgroup label="Project0"><option value="Workspace0" selected="true">Workspace0</option></optgroup></select> 
+      <span id="tituloGrafico" class="label">Image Title</span>&nbsp;| 
+      <span class="label label-info">Nodes:</span>
+      <small>&nbsp;<span id="nodesValue"></span></small> 
+      <span class="label label-info">Edges:</span>
+      <small>&nbsp;<span id="edgesValue"></span></small> 
+      <span class="label label-info">Type:</span>
+      <small>&nbsp;<span id="typeValue"></span>&nbsp;</small>| 
+      <a href="#" id="descargar" target="_blank"> <img src="img/download.png" width="20" height="20" title="Download image" alt="Download" /> </a> 
+      <a href="#" id="downloadCSV" target="_blank"> <img src="img/opendata.png" width="70" height="20" title="Download graph file (CSV)" alt="Download (CSV)" /> </a> | 
+      <input type="text" size="5" id="txtSearch" placeholder="Search node" class="input-small" autocomplete="off" /> 
+      <i class="icon-search"></i> 
+      <img id="imgLoading" src="img/loading.gif" width="24px" height="24px" /> 
+     </form>
+     <!-- THE MAGIC START HERE -->
+     <div class="sigma-parent" id="sigma-example-parent" style="margin: 10px"> 
+      <div class="sigma-expand" id="sigma-example"></div> 
+     </div> 
+    </div> 
+
+{% endblock %}
+
+{% block scripts %}
+
+  <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-1.8.3.min.js') }}">
+  </script> 
+  <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-ui-1.10.3.custom.min.js') }}">
+  </script> 
+  <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.cookie.js') }}">
+  </script> 
+  <script type="text/javascript" src="{{ url_for('.geodataviz_script') }}">
+  </script> 
+  <script type="text/javascript" src="{{ url_for('static', filename='bootstrap3/js/bootstrap.min.js') }}">
+  </script> 
+  <script type="text/javascript" src="{{ url_for('static', filename='js/sigma.min.js') }}">
+  </script> 
+  <script type="text/javascript" src="{{ url_for('static', filename='js/sigma.parseGexf.js') }}">
+  </script> 
+  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='bootstrap3/css/bootstrap.css') }}" /> 
+  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='css/jquery-ui-1.10.3.custom.min.css') }}" /> 
+  <style type="text/css">
+    label {
+      display: inline-block;
+      width: 5em;
+    }
+  /* sigma.js context : */
+  .sigma-parent {
+    position: relative;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    background: #222;    
+    height: 1000px; 
+  }
+  .sigma-expand {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+  .buttons-container{
+    padding-bottom: 8px;
+    padding-top: 12px;
+  }
+
+  
+  </style> 
+
+{% endblock %}

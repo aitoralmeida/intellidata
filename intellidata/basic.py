@@ -293,6 +293,14 @@ def zipcode_timetables_category(zipcode, category):
 
     return render_template("basic/zipcode_timetable_category.html", category_name = category.title(), category_timetable = category_timetable)
 
+@basic_blueprint.route('/geodataviz/')
+def geodataviz():
+    return render_template("geoviz/index.html")
+
+@basic_blueprint.route('/geodataviz/geodata.js')
+def geodataviz_script():
+    return render_template("geoviz/loxawebsite-0.9.1.js")
+
 @basic_blueprint.route("/zipcodes/<zipcode>/top_clients/")
 def zipcode_top_clients(zipcode):
     return ":-)"
