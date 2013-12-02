@@ -18,7 +18,9 @@ def contact():
 
 # Basic visualizations
 from .basic import basic_blueprint
+from .global_summaries import global_blueprint
 app.register_blueprint(basic_blueprint, url_prefix = '/basic')
+app.register_blueprint(global_blueprint, url_prefix = '/global')
 
 
 def run():

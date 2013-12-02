@@ -58,8 +58,9 @@
                     <li {% if link == "global" %}class="active"{% endif %} class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Global  <b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li><a href="{{ url_for('basic.adjacency') }}">Adjacency matrix</a></li>
-                            <li><a href="{{ url_for('basic.geodataviz') }}">Relationships</a></li>
+                            <li><a href="{{ url_for('global.summary') }}">Summary</a></li>
+                            <li><a href="{{ url_for('global.adjacency') }}">Adjacency matrix</a></li>
+                            <li><a href="{{ url_for('global.geodataviz') }}">Relationships</a></li>
                         </ul>
                     </li>
                     <li {% if link == "local" %}class="active"{% endif %}><a href="{{ url_for('basic.zipcodes') }}">Local</a></li>
