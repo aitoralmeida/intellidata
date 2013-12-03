@@ -36,6 +36,7 @@
         </thead>
         <tbody>
             {% for category in categories %}
+            {% if summary[category]['biggest_receiver'] != 'none' %}
             <tr>
                 <td><b>{{ category_names[category] }}</b></td>
                 <td><a href="{{ url_for('local.zipcode_summary', zipcode=summary[category]['biggest_receiver']) }}" class="btn btn-link">{{ summary[category]['biggest_receiver'] }}</a></td>
@@ -44,6 +45,7 @@
                 <td><a href="{{ url_for('local.zipcode_summary', zipcode=summary[category]['biggest_receiver']) }}" class="btn btn-link">{{ summary[category]['most_central'] }}</a></td>
                 <td><a href="{{ url_for('local.zipcode_summary', zipcode=summary[category]['biggest_receiver']) }}" class="btn btn-link">{{ summary[category]['biggest_traveler'] }}</a></td>
             </tr>
+            {% endif %}
             {% endfor %}
         </tbody>
     </table>
