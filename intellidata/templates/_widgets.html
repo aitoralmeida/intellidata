@@ -81,7 +81,7 @@
     </script>
 {% endmacro %}
 
-{% macro map(id, svg_map_file, url_template, file_url, zipcode, algorithm, algorithms, field, fields) %}
+{% macro map_simple(id, file_url) %}
         <div class="alert alert-error" id="error_message_{{ id }}">
             <h1>There was an error accessing data. Check <a href="{{ file_url }}">this</a>. </h1>
         </div>
@@ -93,6 +93,11 @@
         </div>
 
         <div id="map_{{ id }}"></div>
+{% endmacro %}
+
+
+{% macro map(id, svg_map_file, url_template, file_url, zipcode, algorithm, algorithms, field, fields) %}
+        {{ map_simple(id, file_url) }}
         <div>
         {% for cur_algorithm in algorithms %}
             <a class="btn {% if cur_algorithm == algorithm %}btn-default{% else %}btn-success{% endif %}" href="{{ url_template.replace('ALGORITHM', cur_algorithm).replace('FIELD', field) }}">{{ algorithms[cur_algorithm] }}</a>

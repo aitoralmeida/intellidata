@@ -38,6 +38,22 @@ def zipcodes():
 def zipcode_summary(zipcode):
     return render_template("basic/zipcode.html", zipcode = zipcode)
 
+
+@local_blueprint.route('/zipcodes/<zipcode>/single_map/')
+def zipcode_simple_map(zipcode):
+    field = 'incomes'
+    algorithm = 'ranked'
+    data = {
+        str(zipcode) : {
+            str(field) : 0
+        }
+    }
+
+    svg_file_path = generate_zipcodes_map(data, zipcode, 'single', field, algorithm)
+    svg_file_path = 'geo/' + svg_file_path.split('/')[-1]
+    return json.dumps({ 'url' : url_for('static', filename = svg_file_path) })
+
+
 @local_blueprint.route('/zipcodes/<zipcode>/map/')
 def zipcode_map(zipcode):
     return zipcode_map_algorithm(zipcode, 'all', Algorithms.DEFAULT, 'incomes', 'any', 'any')

@@ -3,17 +3,28 @@
 {% extends "master.html" %}
 {% block body %}
 
-{% from "_widgets.html" import timetable %}
+{% from "_widgets.html" import map_simple %}
 <div class="container">
 
     <div class="page-header">
         <h2>{{ zipcode }}: further information</h2>
     </div>
     <ul>
-        <li><a href="{{ url_for('local.zipcode_timeline', zipcode = zipcode ) }}">Timeline</a></li>
-        <li><a href="{{ url_for('local.zipcode_timetables', zipcode = zipcode ) }}">Timetables</a></li>
-        <li><a href="{{ url_for('local.zipcode_map', zipcode = zipcode ) }}">Map</a></li>
+        <li><a href="{{ url_for('.zipcode_timeline', zipcode = zipcode ) }}">Timeline</a></li>
+        <li><a href="{{ url_for('.zipcode_timetables', zipcode = zipcode ) }}">Timetables</a></li>
+        <li><a href="{{ url_for('.zipcode_map', zipcode = zipcode ) }}">Map</a></li>
     </ul>
+
+    {{ map_simple("0", url_for('.zipcode_simple_map', zipcode =  zipcode)) }}
 </div>
+
+{% endblock %}
+
+{% block scripts  %}
+{% from "_widgets.html" import map_scripts, map_initializer %}
+
+{{ map_scripts() }}
+{{ map_initializer("0", url_for('.zipcode_simple_map', zipcode = zipcode), []) }}
+
 
 {% endblock %}
