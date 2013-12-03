@@ -64,6 +64,7 @@
                         </ul>
                     </li>
                     <li {% if link == "local" %}class="active"{% endif %}><a href="{{ url_for('local.zipcodes') }}">Local</a></li>
+                    <li {% if link == "search" %}class="active"{% endif %}><a href="{{ url_for('search.index') }}">Search</a></li>
                     <li {% if link == "contact" %}class="active"{% endif %}><a href="{{ url_for('contact') }}">Contact</a></li>
                 </ul>
             </div>

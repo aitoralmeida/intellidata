@@ -1,0 +1,112 @@
+{% set link="search" %}
+{% set title="Search" %}
+{% extends "master.html" %}
+{% block body %}
+
+<div class="container">
+    <div class="page-header">
+        <h1>Search</h1>
+    </div>
+
+    <div>
+        <form class="form-horizontal" role="form" action="{{ url_for('.basic_results') }}" method="GET">
+
+            <div class="form-group">
+                <label for="age" class="col-lg-2 control-label">Age group</label>
+                <div class="col-lg-3">
+                    <select class="form-control" id="age" name="age">
+                        <option {% if age == 'all' %}selected="selected"{% endif %} value="all">All</option>
+                        <option {% if age == '0' %}selected="selected"{% endif %} value="0">0-18</option>
+                        <option {% if age == '1' %}selected="selected"{% endif %} value="1">19-25</option>
+                        <option {% if age == '2' %}selected="selected"{% endif %} value="2">26-35</option>
+                        <option {% if age == '3' %}selected="selected"{% endif %} value="3">36-45</option>
+                        <option {% if age == '4' %}selected="selected"{% endif %} value="4">46-55</option>
+                        <option {% if age == '5' %}selected="selected"{% endif %} value="5">56-65</option>
+                        <option {% if age == '6' %}selected="selected"{% endif %} value="6">66-</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="gender" class="col-lg-2 control-label">Gender</label>
+                <div class="col-lg-3">
+                    <select class="form-control" id="gender" name="gender">
+                        <option {% if gender == "all" %}selected="selected"{% endif %} value="all">All</option>
+                        <option {% if gender == "male" %}selected="selected"{% endif %} value="male">Male</option>
+                        <option {% if gender == "female" %}selected="selected"{% endif %} value="female">Female</option>
+                        <option {% if gender == "enterprise" %}selected="selected"{% endif %} value="enterprise">Company</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="category" class="col-lg-2 control-label">Category</label>
+                <div class="col-lg-3">
+                    <select class="form-control" id="category" name="category">
+                        <option {% if category == "all" %}selected="selected"{% endif %} value="all">All</option>
+                        {% for cur_category in categories %}
+                        <option {% if category == cur_category %}selected="selected"{% endif %} value="{{ cur_category }}">{{ category_names[cur_category] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="criteria" class="col-lg-2 control-label">Criteria</label>
+                <div class="col-lg-3">
+                    <select class="form-control" id="criteria" name="criteria">
+                        <option value="total">Expenditure</option>
+                        <option value="num_payments">Number of payments</option>
+                        <option value="avg">Average</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-lg-offset-2 col-lg-2">
+                    <button type="submit" class="btn btn-default">Search</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% if results|length > 0 %}
+        <div class="page-header">
+            <h2>Results</h2>
+        </div>
+
+        <div class="col-lg-6 col-lg-offset-3 text-center">
+            <table class="table table-border table-hover">
+                <thead>
+                    <tr>
+                        <th class="text-center">Zipcode</th>
+                        <th class="text-center">Expenditure</th>
+                        <th class="text-center">Number of payments</th>
+                        <th class="text-center">Average payment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                        <tr>
+                            <td><a href="{{ url_for('local.zipcode_summary', zipcode = result['shop_zipcode']) }}">{{ result['shop_zipcode'] }}</a></td>
+                            <td>{{ '%.2f' % result['total'] }} €</td>
+                            <td>{{ result['num_payments'] }} payments</td>
+                            <td>{{ '%.2f' % result['avg'] }} €</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        {% if query_processed %}
+            <div class="alert">
+                <h1>No result found</h1>
+            </div>
+        {% endif %}
+    {% endif %}
+
+
+    
+</div>
+
+{% endblock %}
