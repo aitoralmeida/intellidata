@@ -39,27 +39,26 @@ def zipcode_summary(zipcode):
 
 @local_blueprint.route('/zipcodes/<zipcode>/map/')
 def zipcode_map(zipcode):
-    return zipcode_map_algorithm(zipcode, Algorithms.DEFAULT, 'incomes')
+    return zipcode_map_algorithm(zipcode, 'all', Algorithms.DEFAULT, 'incomes')
+
+@local_blueprint.route('/zipcodes/<zipcode>/map/<category>/<algorithm>/<field>/')
+def zipcode_map_algorithm(zipcode, category, algorithm, field):
+    link_tpl = url_for('.zipcode_map_algorithm', zipcode = zipcode, category = category, algorithm = 'ALGORITHM', field = 'FIELD')
+    return _zipcode_map_algorithm_impl(zipcode, category, algorithm, field, link = link_tpl)
+
+@local_blueprint.route('/zipcodes/<zipcode>/map/<category>/<algorithm>/<field>/week/<week>/')
+def zipcode_map_algorithm_week(zipcode, category, algorithm, field, week):
+    link_tpl = url_for('.zipcode_map_algorithm_week', zipcode = zipcode, category = category, algorithm = 'ALGORITHM', field = 'FIELD', week = week)
+    return _zipcode_map_algorithm_impl(zipcode, category, algorithm, field, link = link_tpl, week = week)
+
+@local_blueprint.route('/zipcodes/<zipcode>/map/<category>/<algorithm>/<field>/month/<month>/')
+def zipcode_map_algorithm_month(zipcode, category, algorithm, field, month):
+    link_tpl = url_for('.zipcode_map_algorithm_month', zipcode = zipcode, category = category, algorithm = 'ALGORITHM', field = 'FIELD', month = month)
+    return _zipcode_map_algorithm_impl(zipcode, category, algorithm, field, link = link_tpl, month = month)
 
 
-@local_blueprint.route('/zipcodes/<zipcode>/map/<algorithm>/<field>/')
-def zipcode_map_algorithm(zipcode, algorithm, field):
-    link_tpl = url_for('.zipcode_map_algorithm', zipcode = zipcode, algorithm = 'ALGORITHM', field = 'FIELD')
-    return _zipcode_map_algorithm_impl(zipcode, algorithm, field, link = link_tpl)
-
-@local_blueprint.route('/zipcodes/<zipcode>/map/<algorithm>/<field>/week/<week>/')
-def zipcode_map_algorithm_week(zipcode, algorithm, field, week):
-    link_tpl = url_for('.zipcode_map_algorithm_week', zipcode = zipcode, algorithm = 'ALGORITHM', field = 'FIELD', week = week)
-    return _zipcode_map_algorithm_impl(zipcode, algorithm, field, link = link_tpl, week = week)
-
-@local_blueprint.route('/zipcodes/<zipcode>/map/<algorithm>/<field>/month/<month>/')
-def zipcode_map_algorithm_month(zipcode, algorithm, field, month):
-    link_tpl = url_for('.zipcode_map_algorithm_month', zipcode = zipcode, algorithm = 'ALGORITHM', field = 'FIELD', month = month)
-    return _zipcode_map_algorithm_impl(zipcode, algorithm, field, link = link_tpl, month = month)
-
-
-def _zipcode_map_algorithm_impl(zipcode, algorithm, field, link, week = None, month = None):
-    error, data = _retrieve_data(zipcode, algorithm, field, week, month)
+def _zipcode_map_algorithm_impl(zipcode, category, algorithm, field, link, week = None, month = None):
+    error, data = _retrieve_data(zipcode, category, algorithm, field, week, month)
     if error:
         return error
 
@@ -100,13 +99,13 @@ def _zipcode_map_algorithm_impl(zipcode, algorithm, field, link, week = None, mo
     }
 
     if week is not None:
-        file_link_path = url_for('.zipcode_map_file_week', zipcode = zipcode, algorithm = algorithm, field = field, week = week)
+        file_link_path = url_for('.zipcode_map_file_week', zipcode = zipcode, category = category, algorithm = algorithm, field = field, week = week)
         mode = 'week'
     elif month is not None:
-        file_link_path = url_for('.zipcode_map_file_month', zipcode = zipcode, algorithm = algorithm, field = field, month = month)
+        file_link_path = url_for('.zipcode_map_file_month', zipcode = zipcode, category = category, algorithm = algorithm, field = field, month = month)
         mode = 'month'
     else:
-        file_link_path = url_for('.zipcode_map_file', zipcode = zipcode, algorithm = algorithm, field = field)
+        file_link_path = url_for('.zipcode_map_file', zipcode = zipcode, category = category, algorithm = algorithm, field = field)
         mode = 'total'
 
     # 
@@ -127,47 +126,69 @@ def _zipcode_map_algorithm_impl(zipcode, algorithm, field, link, week = None, mo
         }
         current_field = field_translator[field]
 
-        demography = False
+        cubes = {
+            'male' : {
+                '0' : 0, '1' : 0, '2' : 0, '3' : 0, '4' : 0, '5' : 0, '6' : 0, 'U' : 0,
+            },
+            'female' : {
+                '0' : 0, '1' : 0, '2' : 0, '3' : 0, '4' : 0, '5' : 0, '6' : 0, 'U' : 0,
+            },
+            'enterprise' : {
+                'U' : 0,
+            },
+            'unknown' : {
+                '0' : 0, '1' : 0, '2' : 0, '3' : 0, '4' : 0, '5' : 0, '6' : 0, 'U' : 0,
+            }
+        }
+        total = 0
 
         if mode == 'week':
-            pass
+            for cur_category, category_data in value['categories'].iteritems():
+                if category == 'all' or category == cur_category:
+                    if week in category_data['weeks']:
+                        week_data = category_data['weeks'][week]
+                        cube_data = week_data['cubes']['cubes']
+                        for gender in cube_data:
+                            for age in cube_data[gender]:
+                                cubes[gender][age] += cube_data[gender][age][current_field]
+                                total += cube_data[gender][age][current_field]
+
         elif mode == 'month':
-            pass
+            for cur_category, category_data in value['categories'].iteritems():
+                if category == 'all' or category == cur_category:
+                    if month in category_data['months']:
+                        month_data = category_data['months'][month]
+                        cube_data = month_data['cubes']['cubes']
+                        for gender in cube_data:
+                            for age in cube_data[gender]:
+                                cubes[gender][age] += cube_data[gender][age][current_field]
+                                total += cube_data[gender][age][current_field]
+
+        else:
+            for cur_category, category_data in value['categories'].iteritems():
+                if category == 'all' or category == cur_category:
+                    for month_data in category_data['months'].values():
+                        cube_data = month_data['cubes']['cubes']
+                        for gender in cube_data:
+                            for age in cube_data[gender]:
+                                cubes[gender][age] += cube_data[gender][age][current_field]
+                                total += cube_data[gender][age][current_field]
+
+        if total == 0:
+            demography = False
         else:
             demography = True
-            cubes = {
-                'male' : {
-                    '0' : 0, '1' : 0, '2' : 0, '3' : 0, '4' : 0, '5' : 0, '6' : 0, 'U' : 0,
-                },
-                'female' : {
-                    '0' : 0, '1' : 0, '2' : 0, '3' : 0, '4' : 0, '5' : 0, '6' : 0, 'U' : 0,
-                },
-                'enterprise' : {
-                    'U' : 0,
-                },
-                'unknown' : {
-                    '0' : 0, '1' : 0, '2' : 0, '3' : 0, '4' : 0, '5' : 0, '6' : 0, 'U' : 0,
-                }
-            }
-            total = 0
-            for category_data in value['categories'].values():
-                for month_data in category_data['months'].values():
-                    cube_data = month_data['cubes']['cubes']
-                    for gender in cube_data:
-                        for age in cube_data[gender]:
-                            cubes[gender][age] += cube_data[gender][age][current_field]
-                            total += cube_data[gender][age][current_field]
-
             for gender in cubes:
                 for age in cubes[gender]:
                     cubes[gender][age] = 100.0 * cubes[gender][age] / total
-            cubes_totals = {}
-            cubes_totals['male'] = sum(cubes['male'].values())
-            cubes_totals['female'] = sum(cubes['female'].values())
-            cubes_totals['enterprise'] = sum(cubes['enterprise'].values())
-            cubes_totals['unknown'] = sum(cubes['unknown'].values())
-            for age in cubes['male']:
-                cubes_totals[age] = cubes['male'][age] + cubes['female'][age] + cubes['enterprise'].get(age, 0)
+
+        cubes_totals = {}
+        cubes_totals['male'] = sum(cubes['male'].values())
+        cubes_totals['female'] = sum(cubes['female'].values())
+        cubes_totals['enterprise'] = sum(cubes['enterprise'].values())
+        cubes_totals['unknown'] = sum(cubes['unknown'].values())
+        for age in cubes['male']:
+            cubes_totals[age] = cubes['male'][age] + cubes['female'][age] + cubes['enterprise'].get(age, 0)
     
     # 
     # Show navigation
@@ -185,27 +206,30 @@ def _zipcode_map_algorithm_impl(zipcode, algorithm, field, link, week = None, mo
         month_number = int(month_id[-2:])
         months[month_id] = '%s/%s' % (month_number, year)
 
-    return render_template("basic/map.html", zipcode = zipcode, algorithm = algorithm, algorithms = Algorithms.ALGORITHMS, field = field, fields = FIELDS, months = months, weeks = weeks, week = week, month = month, link_template = link, file_link_path = file_link_path, summary = summary, demography = demography, cubes = cubes, cubes_totals = cubes_totals, ages = AGES)
+    return render_template("basic/map.html", zipcode = zipcode, category = category, algorithm = algorithm, algorithms = Algorithms.ALGORITHMS, field = field, fields = FIELDS, months = months, weeks = weeks, week = week, month = month, link_template = link, file_link_path = file_link_path, summary = summary, demography = demography, cubes = cubes, cubes_totals = cubes_totals, ages = AGES, categories = CATEGORIES, category_names = CATEGORY_NAMES)
 
 
-@local_blueprint.route('/zipcodes/<zipcode>/map/filepath/<algorithm>/<field>/')
-def zipcode_map_file(zipcode, algorithm, field):
-    return _zipcode_map_file_impl(zipcode, algorithm, field)
+@local_blueprint.route('/zipcodes/<zipcode>/map/filepath/<category>/<algorithm>/<field>/')
+def zipcode_map_file(zipcode, category, algorithm, field):
+    return _zipcode_map_file_impl(zipcode, category, algorithm, field)
 
-@local_blueprint.route('/zipcodes/<zipcode>/map/filepath/<algorithm>/<field>/week/<week>/')
-def zipcode_map_file_week(zipcode, algorithm, field, week):
-    return _zipcode_map_file_impl(zipcode, algorithm, field, week = week)
+@local_blueprint.route('/zipcodes/<zipcode>/map/filepath/<category>/<algorithm>/<field>/week/<week>/')
+def zipcode_map_file_week(zipcode, category, algorithm, field, week):
+    return _zipcode_map_file_impl(zipcode, category, algorithm, field, week = week)
 
-@local_blueprint.route('/zipcodes/<zipcode>/map/filepath/<algorithm>/<field>/month/<month>/')
+@local_blueprint.route('/zipcodes/<zipcode>/map/filepath/<category>/<algorithm>/<field>/month/<month>/')
 def zipcode_map_file_month(zipcode, algorithm, field, month):
-    return _zipcode_map_file_impl(zipcode, algorithm, field, month = month)
+    return _zipcode_map_file_impl(zipcode, category, algorithm, field, month = month)
 
-def _retrieve_data(zipcode, algorithm, field, week = None, month = None):
+def _retrieve_data(zipcode, category, algorithm, field, week = None, month = None):
     if algorithm not in Algorithms.ALGORITHMS:
         return render_template("errors.html", message = "Invalid algorithm"), None
 
     if field not in FIELDS:
         return render_template("errors.html", message = "Invalid field"), None
+
+    if category not in CATEGORIES and category != 'all':
+        return render_template("errors.html", message = "Invalid category"), None
 
     if week is not None and week not in WEEKS:
         return render_template("errors.html", message = "Invalid week"), None
@@ -231,22 +255,27 @@ def _retrieve_data(zipcode, algorithm, field, week = None, month = None):
     else:
         value = 'total'
 
+    if category == 'all':
+        cat_query = 'total'
+    else:
+        cat_query = category
+
     for zcode, zdata in zipcode_data['value']['home_zipcodes'].iteritems():
         if key in zdata and value in zdata[key]:
             data[zcode] = dict(
-                incomes      = zdata[key][value]['total']['incomes'],
-                numcards     = int(zdata[key][value]['total']['num_cards']),
-                numpay       = int(zdata[key][value]['total']['num_payments'])
+                incomes      = zdata[key][value][cat_query]['incomes'],
+                numcards     = int(zdata[key][value][cat_query]['num_cards']),
+                numpay       = int(zdata[key][value][cat_query]['num_payments'])
             )
     return None, data
 
 
-def _zipcode_map_file_impl(zipcode, algorithm, field, week = None, month = None):
-    error, data = _retrieve_data(zipcode, algorithm, field, week, month)
+def _zipcode_map_file_impl(zipcode, category, algorithm, field, week = None, month = None):
+    error, data = _retrieve_data(zipcode, category, algorithm, field, week, month)
     if error:
         return error
 
-    svg_file_path = generate_zipcodes_map(data, zipcode, '%s_%s' % (week or 'anyweek', month or 'anymonth'), field, algorithm)
+    svg_file_path = generate_zipcodes_map(data, zipcode, '%s_%s_%s' % (category, week or 'anyweek', month or 'anymonth'), field, algorithm)
     svg_file_path = 'geo/' + svg_file_path.split('/')[-1]
     return json.dumps({ 'url' : url_for('static', filename = svg_file_path) })
 

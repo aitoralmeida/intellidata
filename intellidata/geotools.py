@@ -134,7 +134,6 @@ def obtain_shp_file(data, zipcode, identifier, key_field, data_hash, algorithm):
         for field in zdata:
             all_fields.add(field.title())
         max_value = max(max_value, zdata[key_field])
-        print repr(max_value)
         all_key_values.append(zdata[key_field])
 
         coordinates = obtain_kml_coordinates(zcode)
