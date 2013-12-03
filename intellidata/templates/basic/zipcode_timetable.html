@@ -7,12 +7,23 @@
 <div class="container">
     
     <h1>Table of contents</h1>
-    <ul>
-        <li><a href="total">Total</a></li>
-        {% for category in categories %}
-        <li><a href="{{ url_for('local.zipcode_timetables_category', zipcode = zipcode, category = category) }}">{{ category_names[category] }}</a></li>
-        {% endfor %}
-    </ul>
+    <div class="row">
+        <div class="col-lg-4">
+            <ul>
+                <li><a href="total">Total</a></li>
+                {% for category in categories[:8] %}
+                <li><a href="{{ url_for('local.zipcode_timetables_category', zipcode = zipcode, category = category) }}">{{ category_names[category] }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-lg-4">
+            <ul>
+                {% for category in categories[8:] %}
+                <li><a href="{{ url_for('local.zipcode_timetables_category', zipcode = zipcode, category = category) }}">{{ category_names[category] }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 
     <div class="page-header">
         <a name="total"></a>

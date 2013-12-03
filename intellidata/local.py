@@ -347,7 +347,30 @@ def zipcode_timeline(zipcode):
             data[field][0].append(start_day.strftime("%d/%m/%Y"))
             data[field][1].append(weeks_data[week]['summary'][field])
 
-    return render_template("basic/zipcode_timeline.html", zipcode = zipcode, data = data)
+    category_data = {}
+    for category in CATEGORIES:
+        category_data[category] = {}
+
+        for field in fields:
+            category_data[category][field] = [], []
+
+        weeks_data = zipcode_data['value']['categories'][category]['weeks']
+        for week in sorted(weeks_data.keys()):
+            year        = int(week[:4])
+            week_number = int(week[-2:])
+            start_day, _ = get_week_borders(week_number, year)
+            
+            for field in fields:
+                category_data[category][field][0].append(start_day.strftime("%d/%m/%Y"))
+                
+                total_data = weeks_data[week]['cubes']['total']['per_gender']
+                total_value = 0
+                for gender in 'male', 'female', 'enterprise', 'unknown':
+                    total_value += total_data[gender][field]
+
+                category_data[category][field][1].append(total_value)
+
+    return render_template("basic/zipcode_timeline.html", zipcode = zipcode, data = data, categories = CATEGORIES, category_names = CATEGORY_NAMES, category_data = category_data)
 
 @local_blueprint.route('/zipcodes/<zipcode>/timetables/')
 def zipcode_timetables(zipcode):

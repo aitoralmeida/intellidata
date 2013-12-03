@@ -5,12 +5,55 @@
 
 {% from "_widgets.html" import timeline %}
 <div class="container">
-    <h2>Average payment</h2>
+
+    <div class="page-header">
+        <h1>Timelines for {{ zipcode }}</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-5">
+            <ul>
+                <li><a href="#total">Total</a></li>
+                {% for category in categories[:8] %}
+                    <li><a href="#{{ category }}">{{ category_names[category] }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="col-lg-4">
+            <ul>
+                {% for category in categories[8:] %}
+                    <li><a href="#{{ category }}">{{ category_names[category] }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+    </div>
+
+    <a name="total"></a>
+    <h2>Total</h2>
+    
+    <h3>Average payment</h3>
     {{ timeline(data['avg'][0], data['avg'][1], "avg") }}
-    <h2>Number of payments</h2>
+    <h3>Number of payments</h3>
     {{ timeline(data['num_payments'][0], data['num_payments'][1], "num_payments", "%i") }}
-    <h2>Total expenditure</h2>
+    <h3>Total expenditure</h3>
     {{ timeline(data['total'][0], data['total'][1], "total") }}
+
+    {% for category in categories %}
+
+    <a name="{{ category }}"></a>
+    <h2>{{ category_names[category] }}</h2>
+    
+    <h3>Average payment</h3>
+    {{ timeline(category_data[category]['avg'][0], category_data[category]['avg'][1], 'avg_' + category ) }}
+    <h3>Number of payments</h3>
+    {{ timeline(category_data[category]['num_payments'][0], category_data[category]['num_payments'][1], "num_payments_" + category, "%i") }}
+    <h3>Total expenditure</h3>
+    {{ timeline(category_data[category]['total'][0], category_data[category]['total'][1], "total_" + category) }}
+
+    {% endfor %}
+
 </div>
 
 {% endblock %}
@@ -21,5 +64,11 @@
     {{ timeline_load('avg') }}
     {{ timeline_load('num_payments', 'payment') }}
     {{ timeline_load('total') }}
+
+    {% for category in categories %}
+        {{ timeline_load('avg_' + category) }}
+        {{ timeline_load('num_payments_' + category, 'payment') }}
+        {{ timeline_load('total_' + category) }}
+    {% endfor %}
 {% endblock %}
 
