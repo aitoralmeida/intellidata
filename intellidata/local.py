@@ -135,6 +135,7 @@ def _zipcode_map_algorithm_impl(zipcode, category, algorithm, field, link, time_
 
         field_translator = {
             'numpay' : 'num_payments',
+            'numcards'  : 'num_cards',
             'cards'  : 'num_cards',
             'incomes' : 'total'
         }
