@@ -40,25 +40,22 @@ def zipcode_summary(zipcode):
 
 @local_blueprint.route('/zipcodes/<zipcode>/map/')
 def zipcode_map(zipcode):
-    return zipcode_map_algorithm(zipcode, 'all', Algorithms.DEFAULT, 'incomes')
+    return zipcode_map_algorithm(zipcode, 'all', Algorithms.DEFAULT, 'incomes', 'any', 'any')
 
-@local_blueprint.route('/zipcodes/<zipcode>/map/<category>/<algorithm>/<field>/')
-def zipcode_map_algorithm(zipcode, category, algorithm, field):
-    link_tpl = url_for('.zipcode_map_algorithm', zipcode = zipcode, category = category, algorithm = 'ALGORITHM', field = 'FIELD')
-    return _zipcode_map_algorithm_impl(zipcode, category, algorithm, field, link = link_tpl)
+@local_blueprint.route('/zipcodes/<zipcode>/map/<category>/<algorithm>/<field>/<time_filter>/<time_frame>/')
+def zipcode_map_algorithm(zipcode, category, algorithm, field, time_filter, time_frame):
+    link_tpl = url_for('.zipcode_map_algorithm', zipcode = zipcode, category = category, algorithm = 'ALGORITHM', field = 'FIELD', time_filter = time_filter, time_frame = time_frame)
+    week = None
+    month = None
+    if time_filter == 'week':
+        week = time_frame
+    elif time_filter == 'month':
+        month = time_frame
+    elif time_filter != 'any':
+        return render_template("errors.html", message = "Invalid time filter")
+    return _zipcode_map_algorithm_impl(zipcode, category, algorithm, field, link_tpl, time_filter, time_frame, week, month)
 
-@local_blueprint.route('/zipcodes/<zipcode>/map/<category>/<algorithm>/<field>/week/<week>/')
-def zipcode_map_algorithm_week(zipcode, category, algorithm, field, week):
-    link_tpl = url_for('.zipcode_map_algorithm_week', zipcode = zipcode, category = category, algorithm = 'ALGORITHM', field = 'FIELD', week = week)
-    return _zipcode_map_algorithm_impl(zipcode, category, algorithm, field, link = link_tpl, week = week)
-
-@local_blueprint.route('/zipcodes/<zipcode>/map/<category>/<algorithm>/<field>/month/<month>/')
-def zipcode_map_algorithm_month(zipcode, category, algorithm, field, month):
-    link_tpl = url_for('.zipcode_map_algorithm_month', zipcode = zipcode, category = category, algorithm = 'ALGORITHM', field = 'FIELD', month = month)
-    return _zipcode_map_algorithm_impl(zipcode, category, algorithm, field, link = link_tpl, month = month)
-
-
-def _zipcode_map_algorithm_impl(zipcode, category, algorithm, field, link, week = None, month = None):
+def _zipcode_map_algorithm_impl(zipcode, category, algorithm, field, link, time_filter, time_frame, week, month):
     error, data = _retrieve_data(zipcode, category, algorithm, field, week, month)
     if error:
         return error
@@ -206,7 +203,7 @@ def _zipcode_map_algorithm_impl(zipcode, category, algorithm, field, link, week 
         months_data[month_id] = {
             'year' : year,
             'name' : MONTH_NAMES[month_number],
-            'link' : 'NOT IMPLEMENTED', # TODO
+            'link' : url_for('.zipcode_map_algorithm', zipcode = zipcode, category = category, algorithm = algorithm, field = field, time_filter = 'month', time_frame = month_id),
             'weeks' : []
         }
 
@@ -217,7 +214,7 @@ def _zipcode_map_algorithm_impl(zipcode, category, algorithm, field, link, week 
 
         def generate_week(start_day, current_month, current_month_id):
             week_data = {
-                'link' : 'NOT IMPLEMENTED', # TODO
+                'link' : url_for('.zipcode_map_algorithm', zipcode = zipcode, category = category, algorithm = algorithm, field = field, time_filter = 'week', time_frame = week_id),
                 'number' : week_number,
                 'selected' : week == week_id or current_month_id == month
             }
@@ -246,7 +243,7 @@ def _zipcode_map_algorithm_impl(zipcode, category, algorithm, field, link, week 
     for cur_month in MONTHS:
         months.append(months_data[cur_month])
 
-    return render_template("basic/map.html", zipcode = zipcode, category = category, algorithm = algorithm, algorithms = Algorithms.ALGORITHMS, field = field, fields = FIELDS, months = months, week = week, month = month, link_template = link, file_link_path = file_link_path, summary = summary, demography = demography, cubes = cubes, cubes_totals = cubes_totals, ages = AGES, categories = CATEGORIES, category_names = CATEGORY_NAMES)
+    return render_template("basic/map.html", zipcode = zipcode, category = category, algorithm = algorithm, algorithms = Algorithms.ALGORITHMS, field = field, fields = FIELDS, months = months, week = week, month = month, link_template = link, file_link_path = file_link_path, summary = summary, demography = demography, cubes = cubes, cubes_totals = cubes_totals, ages = AGES, categories = CATEGORIES, category_names = CATEGORY_NAMES, time_frame = time_frame, time_filter = time_filter)
 
 
 @local_blueprint.route('/zipcodes/<zipcode>/map/filepath/<category>/<algorithm>/<field>/')
@@ -258,7 +255,7 @@ def zipcode_map_file_week(zipcode, category, algorithm, field, week):
     return _zipcode_map_file_impl(zipcode, category, algorithm, field, week = week)
 
 @local_blueprint.route('/zipcodes/<zipcode>/map/filepath/<category>/<algorithm>/<field>/month/<month>/')
-def zipcode_map_file_month(zipcode, algorithm, field, month):
+def zipcode_map_file_month(zipcode, category, algorithm, field, month):
     return _zipcode_map_file_impl(zipcode, category, algorithm, field, month = month)
 
 def _retrieve_data(zipcode, category, algorithm, field, week = None, month = None):

@@ -166,12 +166,12 @@
 
         <div class="row">
             <div class="col-lg-2 text-center" style="margin-top: 5px">
-                <a class="btn {% if category == 'all' %}btn-default{% else %}btn-success{% endif %}" href="{{ url_for('.zipcode_map_algorithm', zipcode = zipcode, category = 'all', algorithm = algorithm, field = field) }}">All</a>
+                <a class="btn {% if category == 'all' %}btn-default{% else %}btn-success{% endif %}" href="{{ url_for('.zipcode_map_algorithm', zipcode = zipcode, category = 'all', algorithm = algorithm, field = field, time_filter = time_filter, time_frame = time_frame) }}">All</a>
             </div>
 
             {% for cur_category in categories %}
                 <div class="col-lg-2 text-center" style="margin-top: 5px">
-                    <a class="btn {% if category == cur_category %}btn-default{% else %}btn-success{% endif %}" href="{{ url_for('.zipcode_map_algorithm', zipcode = zipcode, category = cur_category, algorithm = algorithm, field = field) }}">{{ category_names[cur_category] }}</a>
+                    <a class="btn {% if category == cur_category %}btn-default{% else %}btn-success{% endif %}" href="{{ url_for('.zipcode_map_algorithm', zipcode = zipcode, category = cur_category, algorithm = algorithm, field = field, time_filter = time_filter, time_frame = time_frame) }}">{{ category_names[cur_category] }}</a>
                 </div>
             {% endfor %}
         </div>
@@ -181,7 +181,7 @@
         <p>Filter by clicking on the week number of month to filter by a filter or month.</p>
 
         <div class="text-right">
-            <a href="" class="btn {% if week or month %}btn-primary{% else %}btn-default{% endif %}">Clean filters</a>
+            <a href="{{ url_for('.zipcode_map_algorithm', zipcode = zipcode, category = category, algorithm = algorithm, field = field, time_filter = 'any', time_frame = 'any') }}" class="btn {% if week or month %}btn-primary{% else %}btn-default{% endif %}">Clean filters</a>
         </div>
 
         <div class="row">
