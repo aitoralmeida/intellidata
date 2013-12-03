@@ -1,4 +1,5 @@
 import json
+import datetime
 from operator import itemgetter
 from collections import OrderedDict
 
@@ -193,20 +194,59 @@ def _zipcode_map_algorithm_impl(zipcode, category, algorithm, field, link, week 
     # 
     # Show navigation
     # 
-    weeks = OrderedDict()
-    for week_id in WEEKS:
-        year = int(week_id[:4])
-        week_number = int(week_id[-2:])
-        start_day, _ = get_week_borders(week_number, year)
-        weeks[week_id] = start_day
 
-    months = OrderedDict()
+    months_data = {}
+
     for month_id in MONTHS:
         year = int(month_id[:4])
         month_number = int(month_id[-2:])
-        months[month_id] = '%s/%s' % (month_number, year)
+    
+        MONTH_NAMES = ['-', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
-    return render_template("basic/map.html", zipcode = zipcode, category = category, algorithm = algorithm, algorithms = Algorithms.ALGORITHMS, field = field, fields = FIELDS, months = months, weeks = weeks, week = week, month = month, link_template = link, file_link_path = file_link_path, summary = summary, demography = demography, cubes = cubes, cubes_totals = cubes_totals, ages = AGES, categories = CATEGORIES, category_names = CATEGORY_NAMES)
+        months_data[month_id] = {
+            'year' : year,
+            'name' : MONTH_NAMES[month_number],
+            'link' : 'NOT IMPLEMENTED', # TODO
+            'weeks' : []
+        }
+
+    for week_id in WEEKS:
+        year = int(week_id[:4])
+        week_number = int(week_id[-2:])
+        start_day, end_day = get_week_borders(week_number, year)
+
+        def generate_week(start_day, current_month, current_month_id):
+            week_data = {
+                'link' : 'NOT IMPLEMENTED', # TODO
+                'number' : week_number,
+                'selected' : week == week_id or current_month_id == month
+            }
+            for pos, weekday in enumerate(('sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday')):
+                cur_day = start_day + datetime.timedelta(days=pos)
+                week_data[weekday] = {
+                    'active' : cur_day.month == current_month,
+                    'day' : cur_day.day,
+                }
+            return week_data
+        def format_month(date):
+            return '%s%s' % (date.year, str(date.month).zfill(2))
+
+        month_id = format_month(start_day)
+        week_data = generate_week(start_day, start_day.month, month_id)
+        if month_id in months_data:
+            months_data[month_id]['weeks'].append(week_data)
+
+        if end_day.month != start_day.month:
+            month_id = format_month(end_day)
+            week_data = generate_week(start_day, end_day.month, month_id)
+            if month_id in months_data:
+                months_data[month_id]['weeks'].append(week_data)
+
+    months = []
+    for cur_month in MONTHS:
+        months.append(months_data[cur_month])
+
+    return render_template("basic/map.html", zipcode = zipcode, category = category, algorithm = algorithm, algorithms = Algorithms.ALGORITHMS, field = field, fields = FIELDS, months = months, week = week, month = month, link_template = link, file_link_path = file_link_path, summary = summary, demography = demography, cubes = cubes, cubes_totals = cubes_totals, ages = AGES, categories = CATEGORIES, category_names = CATEGORY_NAMES)
 
 
 @local_blueprint.route('/zipcodes/<zipcode>/map/filepath/<category>/<algorithm>/<field>/')

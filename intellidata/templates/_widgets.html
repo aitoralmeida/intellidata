@@ -191,3 +191,55 @@ $(document).ready(function() {
    
 {% endmacro %}
 
+{% macro calendar(month) %}
+
+        <div class="col-lg-4 text-center">
+            <h4><a href="{{ month['link'] }}">{{ month['name'] }} {{ month['year'] }}</a></h4>
+            <table class="table table-border table-hover">
+                <tr>
+                    <td></td>
+                    <td class="weekday">S</td>
+                    <td class="weekday">M</td>
+                    <td class="weekday">T</td>
+                    <td class="weekday">W</td>
+                    <td class="weekday">T</td>
+                    <td class="weekday">F</td>
+                    <td class="weekday">S</td>
+                </tr>
+                {% for week in month['weeks'] %}
+                    <tr style="{% if week['selected'] %}background: #afa{% endif %}">
+                        <td class="week_number"><a href="{{ week['link'] }}">{{ week['number'] }}</a></td>
+                        <td class="{% if week['sunday']['active'] %}dayon{% else %}dayoff{% endif %} sunday">{{ week['sunday']['day'] }}</td>
+                        <td class="{% if week['monday']['active'] %}dayon{% else %}dayoff{% endif %}">{{ week['monday']['day'] }}</td>
+                        <td class="{% if week['tuesday']['active'] %}dayon{% else %}dayoff{% endif %}">{{ week['tuesday']['day'] }}</td>
+                        <td class="{% if week['wednesday']['active'] %}dayon{% else %}dayoff{% endif %}">{{ week['wednesday']['day'] }}</td>
+                        <td class="{% if week['thursday']['active'] %}dayon{% else %}dayoff{% endif %}">{{ week['thursday']['day'] }}</td>
+                        <td class="{% if week['friday']['active'] %}dayon{% else %}dayoff{% endif %}">{{ week['friday']['day'] }}</td>
+                        <td class="{% if week['saturday']['active'] %}dayon{% else %}dayoff{% endif %}">{{ week['saturday']['day'] }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+
+
+{% endmacro %}
+
+
+{% macro calendar_scripts() %}
+    <style>
+        .week_number {
+            font-weight: bold;
+        }
+        .dayoff {
+            color: #aaa;
+        }
+        .sunday {
+            color: #f00;
+        }
+        .dayoff.sunday {
+            color: #faa;
+        }
+    </style>
+
+{% endmacro %}

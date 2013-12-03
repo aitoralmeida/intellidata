@@ -3,7 +3,7 @@
 {% extends "master.html" %}
 {% block body %}
         
-    {% from "_widgets.html" import map, timeline %}
+    {% from "_widgets.html" import map, timeline, calendar %}
 
     <div class="container text-center">
         <div class="page-header">
@@ -176,24 +176,32 @@
             {% endfor %}
         </div>
 
-        <div>Months: 
-        <a class="btn btn-primary" href="{{ url_for('.zipcode_map_algorithm', zipcode = zipcode, category = category, algorithm = algorithm, field = field) }}">Total</a>
-        {% for cur_month in months %}
-            <a class="btn {% if month == cur_month %}btn-default{%else%}btn-primary{% endif %}" href="{{ url_for('.zipcode_map_algorithm_month', zipcode = zipcode, category = category, algorithm = algorithm, field = field, month = cur_month) }}">{{ months[cur_month] }}</a>
-        {% endfor %}
+        <h3>Time frames</h3>
+
+        <p>Filter by clicking on the week number of month to filter by a filter or month.</p>
+
+        <div class="text-right">
+            <a href="" class="btn {% if week or month %}btn-primary{% else %}btn-default{% endif %}">Clean filters</a>
         </div>
-        <div>Weeks:
-        <a class="btn btn-primary" href="{{ url_for('.zipcode_map_algorithm', zipcode = zipcode, category = category, algorithm = algorithm, field = field) }}">Total</a>
-        {% for cur_week in weeks %}
-            <a class="btn {% if week == cur_week %}btn-default{%else%}btn-primary{% endif %}" href="{{ url_for('.zipcode_map_algorithm_week', zipcode = zipcode, category = category, algorithm = algorithm, field = field, week = cur_week) }}">{{ weeks[cur_week].date() }}</a>
-        {% endfor %}
+
+        <div class="row">
+            {% for month in months[:3] %}
+                {{ calendar(month) }}
+            {% endfor %}
+        </div>
+        <div class="row">
+            {% for month in months[3:] %}
+                {{ calendar(month) }}
+            {% endfor %}
         </div>
     </div>
 
 {% endblock %}
 {% block scripts %}
 
-    {% from "_widgets.html" import map_scripts, map_initializer, timeline_scripts, timeline_load %}
+    {% from "_widgets.html" import map_scripts, map_initializer, timeline_scripts, timeline_load, calendar_scripts %}
+
+    {{ calendar_scripts() }}
 
     {{ map_scripts() }}
     {{ timeline_scripts(skip_raphael = True) }}
