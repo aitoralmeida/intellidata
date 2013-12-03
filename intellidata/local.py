@@ -299,11 +299,12 @@ def _retrieve_data(zipcode, category, algorithm, field, week = None, month = Non
 
     for zcode, zdata in zipcode_data['value']['home_zipcodes'].iteritems():
         if key in zdata and value in zdata[key]:
-            data[zcode] = dict(
-                incomes      = zdata[key][value][cat_query]['incomes'],
-                numcards     = int(zdata[key][value][cat_query]['num_cards']),
-                numpay       = int(zdata[key][value][cat_query]['num_payments'])
-            )
+            if zdata[key][value][cat_query]['num_payments'] > 0:
+                data[zcode] = dict(
+                    incomes      = zdata[key][value][cat_query]['incomes'],
+                    numcards     = int(zdata[key][value][cat_query]['num_cards']),
+                    numpay       = int(zdata[key][value][cat_query]['num_payments'])
+                )
     return None, data
 
 
@@ -311,6 +312,13 @@ def _zipcode_map_file_impl(zipcode, category, algorithm, field, week = None, mon
     error, data = _retrieve_data(zipcode, category, algorithm, field, week, month)
     if error:
         return error
+
+    if len(data) == 0:
+        data = {
+            str(zipcode) : {
+                str(field) : 0
+            }
+        }
 
     svg_file_path = generate_zipcodes_map(data, zipcode, '%s_%s_%s' % (category, week or 'anyweek', month or 'anymonth'), field, algorithm)
     svg_file_path = 'geo/' + svg_file_path.split('/')[-1]

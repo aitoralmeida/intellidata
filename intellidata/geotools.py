@@ -150,10 +150,14 @@ def obtain_shp_file(data, zipcode, identifier, key_field, data_hash, algorithm):
     # Used for Algorithms.LINEAR
     steps = max_value / 256.0
     # Used for Algorithms.LOGARITHMIC
-    if math.log10(max_value) <= 0:
+    if max_value > 0:
+        log10 = math.log10(max_value)
+    else:
+        log10 = 1
+    if log10 <= 0:
         max_logarithm = 0.0
     else:
-        max_logarithm = 256.0 / math.log10(max_value)
+        max_logarithm = 256.0 / log10
     # Used for Algorithms.RANKED
     all_key_values.sort()
     if len(all_key_values) <= 1:
