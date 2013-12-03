@@ -11,13 +11,12 @@
         <h1>Global summary</h1>
     </div>
 
-    <p>This section includes a global summary of the analyzed dataset. It includes a summary of which zipcodes are more relevant for each category, timelines of the global trends in all categories, as well as heat maps of the time of the day which is more active in all categories. It is possible to retrieve more fine grained data in the local section.</p>
+    <p>This section includes a global summary of the analyzed dataset. It includes a summary of which zipcodes are more relevant for each category and timelines of the global trends in all categories. It is possible to retrieve more fine grained data in the local section.</p>
 
     <h2>Table of contents</h2>
     <ul>
         <li><a href="#summary">Summary</a></li>
         <li><a href="#timelines">Timelines</a></li>
-        <li><a href="#timetables">Timetables</a></li>
     </ul>
 
     <a name="summary"></a>
@@ -68,13 +67,6 @@
             <p>There are detailed timelines in <a href="{{ url_for('.summary_timeline') }}">the timelines section</a> and in each <a href="{{ url_for('local.zipcodes') }}">zipcode summary</a>.</p>
         </div>
     </div>
-
-
-    <a name="timetables"></a>
-    <h2>Timetables</h2>
-
-
-
 </div>
 
 {% endblock %}
