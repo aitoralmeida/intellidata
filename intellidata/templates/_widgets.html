@@ -37,6 +37,12 @@
 {% endmacro %}
 
 {% macro timeline(headers, data, table_id, format = '%.2f') %}
+    {% if data|length == 0 %}
+        <div class="alert alert-danger text-center">
+            <h1>No data available</h1>
+            <p>The timeline is empty</p>
+        </div>
+    {% endif %}
     <table id="{{ table_id }}">
         <tfoot>
             <tr>

@@ -24,4 +24,4 @@ app.register_blueprint(global_blueprint, url_prefix = '/global')
 
 
 def run():
-    app.run(debug = True)
+    app.run(debug = True, host = '0.0.0.0')
