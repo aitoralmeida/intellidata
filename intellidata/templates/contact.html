@@ -4,7 +4,48 @@
 {% block body %}
 
 <div class="container">
-    Contact us at ...
+    <div class="page-header">
+        <h1>Contact</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4 col-lg-offset-1 text-center">
+            <h2>Aitor Almeida</h2>
+            <img src="{{ url_for('static', filename='img/aitor-almeida.jpg') }}" height="185"/>
+            <br/>
+            <br/>
+            <img height="20px" src="{{ url_for('static', filename='img/mail-icon.png') }}"><a href="mailto:aitor.almeida@deusto.es">aitor.almeida@deusto.es</a>
+            <br/>
+            <img height="20px" src="{{ url_for('static', filename='img/web-icon.png') }}">
+            <a href="http://www.morelab.deusto.es/labman/people/members/aitor-almeida/">Personal website</a>
+            <br>
+            <img height="20px" src="{{ url_for('static', filename='img/linkedin-icon.png') }}">
+            <a href="http://es.linkedin.com/pub/aitor-almeida/8/966/6a5">LinkedIn profile</a>
+            <br>
+            <img height="20px" src="{{ url_for('static', filename='img/github-icon.png') }}">
+            <a href="http://github.com/aitoralmeida/">GitHub profile</a>
+            <br>
+        </div>
+
+        <div class="col-lg-4 col-lg-offset-1 text-center">
+            <h2>Pablo Orduña</h2>
+            <img src="{{ url_for('static', filename='img/pablo-orduna.jpg') }}" height="185"/>
+            <br/>
+            <br/>
+            <img height="20px" src="{{ url_for('static', filename='img/mail-icon.png') }}"><a href="mailto:pablo.orduna@deusto.es">pablo.orduna@deusto.es</a>
+            <br/>
+            <img height="20px" src="{{ url_for('static', filename='img/web-icon.png') }}">
+            <a href="http://pablo.ordunya.com/">Personal website</a>
+            <br>
+            <img height="20px" src="{{ url_for('static', filename='img/linkedin-icon.png') }}">
+            <a href="http://linkedin.com/in/porduna/">LinkedIn profile</a>
+            <br>
+            <img height="20px" src="{{ url_for('static', filename='img/github-icon.png') }}">
+            <a href="http://github.com/porduna/">GitHub profile</a>
+            <br>
+        </div>
+
+    </div>
 </div>
 
 {% endblock %}
