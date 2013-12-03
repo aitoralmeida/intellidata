@@ -18,9 +18,11 @@ def contact():
 
 # Basic visualizations
 from .local import local_blueprint
+from .search import search_blueprint
 from .global_summaries import global_blueprint
 app.register_blueprint(local_blueprint, url_prefix = '/local')
 app.register_blueprint(global_blueprint, url_prefix = '/global')
+app.register_blueprint(search_blueprint, url_prefix = '/search')
 
 
 def run():
